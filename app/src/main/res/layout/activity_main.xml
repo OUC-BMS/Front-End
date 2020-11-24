@@ -6,58 +6,50 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@drawable/bg_main3"
     tools:context=".MainActivity">
-
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/ToolbarPopupTheme">
-            <TextView
-                android:id="@+id/tv_toolbar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:textColor="#000000"
-                android:textSize="20sp"
-                android:text=""/>
-
-        </androidx.appcompat.widget.Toolbar>
-
-    </com.google.android.material.appbar.AppBarLayout>
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
-        android:layout_marginLeft="50dp"
-        android:layout_marginRight="50dp">
-        <ImageView
-            android:id="@+id/iv_square"
-            android:layout_width="match_parent"
-            android:layout_height="350dp"
-            android:background="@drawable/square"
-            android:layout_centerInParent="true"/>
-        <ImageView
+    <ImageView
+        android:layout_width="150sp"
+        android:layout_height="60dp"
+        android:background="@drawable/ibird_text1"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="100dp"/>
+    <LinearLayout
+        android:id="@+id/btn_login"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_gravity="center_horizontal"
+        android:orientation="vertical"
+        android:layout_marginTop="130dp"
+        android:layout_centerInParent="true">
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/iv_user"
+            android:layout_width="85dp"
+            android:layout_height="85dp"
+            android:background="@drawable/avater2"
+            android:layout_gravity="start" />
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:background="@drawable/add"/>
-    </RelativeLayout>
+            android:text="登录"
+            android:textSize="21sp"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="10dp"
+            android:layout_gravity="center_horizontal"/>
+    </LinearLayout>
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-
-        android:layout_marginTop="70dp"
-
-        android:background="@color/colorAccent"
-        android:text="一键识别"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold" />
-
+        android:id="@+id/btn_choosePic"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginLeft="110dp"
+        android:layout_marginRight="110dp"
+        android:background="@drawable/btn_rounded_white"
+        android:textColor="#CBFFFFFF"
+        android:textAllCaps="false"
+        android:text="选择图片"
+        android:layout_marginBottom="150dp"
+        android:textStyle="bold"
+        android:layout_gravity="end"/>
 </LinearLayout>

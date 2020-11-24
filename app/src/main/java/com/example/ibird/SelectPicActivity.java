@@ -1,57 +1,35 @@
 package com.example.ibird;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.FileProvider;
-
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.pedaily.yc.ycdialoglib.dialog.select.CustomSelectDialog;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
-import me.leefeng.promptlibrary.PromptButton;
-import me.leefeng.promptlibrary.PromptButtonListener;
-import me.leefeng.promptlibrary.PromptDialog;
-import site.gemus.openingstartanimation.NormalDrawStrategy;
-import site.gemus.openingstartanimation.OpeningStartAnimation;
-import site.gemus.openingstartanimation.RedYellowBlueDrawStrategy;
-
-public class MainActivity extends AppCompatActivity {
-
-    private Button btn_choosePic;
-    private LinearLayout btn_login;
-    private PromptDialog promptDialog;
-    private PromptButton btn_camera = new PromptButton("拍照", null);
-    private PromptButton btn_photo = new PromptButton("相册", null);
+public class SelectPicActivity extends Activity implements View.OnClickListener {
+    private Button take_photo_btn;
+    private Button select_photo_btn;
+    private ImageView photo_iv;
     //使用照相机拍照获取图片
     public static final int TAKE_PHOTO_CODE = 1;
     //使用相册中的图片
@@ -68,79 +46,70 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
+        setContentView(R.layout.activity_select_pic);
+        initViews();
+        Request();
         context = this;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+    }
+
+    private void initViews() {
+        this.take_photo_btn = (Button) findViewById(R.id.take_photo_btn);
+        this.take_photo_btn.setOnClickListener(this);
+        this.select_photo_btn = (Button) findViewById(R.id.select_photo_btn);
+        this.select_photo_btn.setOnClickListener(this);
+        this.photo_iv = (ImageView) findViewById(R.id.photo_iv);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    void Request() {             //获取相机拍摄读写权限
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {//版本判断
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA}, 1);
+            }
         }
+    }
 
-        init();
-        Request();
+    public static Uri getImageContentUri(Context context, File imageFile) {
+        String filePath = imageFile.getAbsolutePath();
+        Cursor cursor = context.getContentResolver().query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                new String[]{MediaStore.Images.Media._ID},
+                MediaStore.Images.Media.DATA + "=? ",
+                new String[]{filePath}, null);
 
-
-        Resources resources = MainActivity.this.getResources();
-        @SuppressLint("UseCompatLoadingForDrawables") Drawable drawable = resources.getDrawable(R.drawable.ibird_logo3);
-        OpeningStartAnimation openingStartAnimation = new OpeningStartAnimation.Builder(this)
-                .setDrawStategy(new RedYellowBlueDrawStrategy())
-                .setAppIcon(drawable)
-                .setAppStatement("没有人比我们更懂鸟")
-                .setAnimationFinishTime(400)
-                .create();
-        openingStartAnimation.show(this);
+        if (cursor != null && cursor.moveToFirst()) {
+            int id = cursor.getInt(cursor
+                    .getColumnIndex(MediaStore.MediaColumns._ID));
+            Uri baseUri = Uri.parse("content://media/external/images/media");
+            return Uri.withAppendedPath(baseUri, "" + id);
+        } else {
+            if (imageFile.exists()) {
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Images.Media.DATA, filePath);
+                return context.getContentResolver().insert(
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            } else {
+                return null;
+            }
+        }
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    private void init(){
-        promptDialog = new PromptDialog(this);
-        btn_choosePic = findViewById(R.id.btn_choosePic);
-        btn_login = findViewById(R.id.btn_login);
-
-        btn_camera.setListener(new PromptButtonListener() {
-            @Override
-            public void onClick(PromptButton promptButton) {
+    public void onClick(View view) {
+        switch (view.getId()) {
+            //拍照
+            case R.id.take_photo_btn:
                 picTyTakePhoto();
-            }
-        });
-
-        btn_photo.setListener(new PromptButtonListener() {
-            @Override
-            public void onClick(PromptButton promptButton) {
+                break;
+            //选择图库
+            case R.id.select_photo_btn:
                 pickPhoto();
-            }
-        });
-
-        btn_login.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                startActivity(intent);
-            }
-        });
-        btn_choosePic.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                Intent intent = new Intent(MainActivity.this, SelectPicActivity.class);
-//                startActivity(intent);
-                PromptButton cancle = new PromptButton("取消", null);
-                cancle.setTextColor(Color.parseColor("#0076ff"));
-                //设置显示的文字大小及颜色
-                //promptDialog.getAlertDefaultBuilder().textSize(12).textColor(Color.GRAY);
-                //默认两个按钮为Alert对话框，大于三个按钮的为底部SHeet形式展现
-                promptDialog.showAlertSheet("", true, cancle,
-                        btn_camera, btn_photo);
-
-            }
-        });
+                break;
+        }
     }
-
 
     /**
      * 拍照获取图片
@@ -212,13 +181,10 @@ public class MainActivity extends AppCompatActivity {
                 }
             } else if (requestCode == PHOTO_CROP_CODE) {
                 if (photoUri != null) {
-
-                    Intent intent = new Intent(MainActivity.this, TestActivity.class);
-                    startActivity(intent);
                     Bitmap bitmap = BitmapFactory.decodeFile(picPath);
                     if (bitmap != null) {
                         //这里可以把图片进行上传到服务器操作
-                        //photo_iv.setImageBitmap(bitmap);
+                        photo_iv.setImageBitmap(bitmap);
                     }
                 }
             }
@@ -261,40 +227,5 @@ public class MainActivity extends AppCompatActivity {
         cursor.moveToFirst();
         //返回图片路径
         return cursor.getString(image_index);
-    }
-
-    public static Uri getImageContentUri(Context context, File imageFile) {
-        String filePath = imageFile.getAbsolutePath();
-        Cursor cursor = context.getContentResolver().query(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                new String[]{MediaStore.Images.Media._ID},
-                MediaStore.Images.Media.DATA + "=? ",
-                new String[]{filePath}, null);
-
-        if (cursor != null && cursor.moveToFirst()) {
-            int id = cursor.getInt(cursor
-                    .getColumnIndex(MediaStore.MediaColumns._ID));
-            Uri baseUri = Uri.parse("content://media/external/images/media");
-            return Uri.withAppendedPath(baseUri, "" + id);
-        } else {
-            if (imageFile.exists()) {
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.Images.Media.DATA, filePath);
-                return context.getContentResolver().insert(
-                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-            } else {
-                return null;
-            }
-        }
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    void Request() {             //获取相机拍摄读写权限
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {//版本判断
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA}, 1);
-            }
-        }
     }
 }
