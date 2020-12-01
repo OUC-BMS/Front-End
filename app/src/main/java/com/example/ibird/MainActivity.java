@@ -229,16 +229,9 @@ public class MainActivity extends AppCompatActivity {
             } else if (requestCode == PHOTO_CROP_CODE) {
                 if (photoUri != null) {
 
-                    Intent intent = new Intent(MainActivity.this, TestActivity.class);
-                    //intent.putExtra();
+                    Intent intent = new Intent(MainActivity.this, TestActivity.class);Log.e("DetailUserActivity", picPath);
+                    intent.putExtra("path", picPath);
                     startActivity(intent);
-                    Bitmap bitmap = BitmapFactory.decodeFile(picPath);
-                    if (bitmap != null) {
-                        CheckNetUtil checkNetUtil = new CheckNetUtil(getApplicationContext());
-                        if (checkNetUtil.initNet()) {
-                            postImage(picPath);
-                        }
-                    }
                 }
             }
         }
@@ -258,8 +251,8 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("aspectX", 1);
         intent.putExtra("aspectY", 1);
         // outputX outputY 是裁剪图片宽高像素
-        intent.putExtra("outputX", 100);
-        intent.putExtra("outputY", 100);
+        intent.putExtra("outputX", 800);
+        intent.putExtra("outputY", 800);
         intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
         //取消人脸识别功能
         intent.putExtra("noFaceDetection", true);
@@ -315,93 +308,5 @@ public class MainActivity extends AppCompatActivity {
                         Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA}, 1);
             }
         }
-    }
-
-    private void postImage(String filePath) {
-        Log.e("DetailUserActivity", filePath);
-//        if (imagePath != null) {
-//            //这里可以上服务器;
-
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .retryOnConnectionFailure(true)
-                .connectTimeout(20, TimeUnit.SECONDS)
-                .writeTimeout(20, TimeUnit.SECONDS)
-                .readTimeout(20, TimeUnit.SECONDS)
-                .build();
-        File file = new File(filePath);
-        //File file = convertBitmapToFile(bitmap);
-        Log.e("PCActivity", "ok1");
-        //RequestBody image = RequestBody.create(MediaType.parse("image/png"), convertBitmapToFile(bitmap));
-        RequestBody image = RequestBody.create(MediaType.parse("image/png"), file);
-        Log.e("DetailFileName", file.getName());
-        Log.e("DetailFilePath", file.getPath());
-        RequestBody requestBody = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                // .addFormDataPart("headImage", imagePath, image)
-                .addFormDataPart("img", file.getName(), image)
-                .addFormDataPart("usage", "p")
-                .build();
-        Log.e("PCActivity", "为啥传不上去" + image + "type:" + type + "userId:" + userId);
-        final Request request = new Request.Builder()
-                .url("http://139.199.84.147/mytieba.api/upload/photo")
-                .addHeader("Cookie", cookie)
-                .post(requestBody)
-                .build();
-        Log.e("PCActivity", "ok2");
-        okHttpClient.newCall(request).enqueue(new Callback() {
-            //请求错误回调方法
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("DetailUserActivity", "获取数据失败");
-                Log.e("DetailUserActivity", String.valueOf(e));
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String responseData = response.body().string();
-                Log.e("DetailresponseData", responseData);
-                if (response.isSuccessful()) {
-                    try {
-                        Log.e("DetailUserActivity", "ok3");
-
-                        Log.e("DetailUserActivity", "ResponseData" + responseData);
-                        JSONObject jsonObject = new JSONObject(responseData);
-                        statu = jsonObject.getBoolean("status");
-                        if (statu) {
-
-                            String pic = "http://139.199.84.147" + jsonObject.getString("pic");
-                            SharedPreferences sharedPreferences = getSharedPreferences("theUser", Context.MODE_PRIVATE);
-                            SharedPreferences.Editor editor = sharedPreferences.edit();
-                            if (type.equals("avatar")) {
-                                editor.putString("avater", pic);
-                                editor.apply();
-                            } else {
-                                editor.putString("background", pic);
-                                editor.apply();
-                            }
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(getApplicationContext(), "成功", Toast.LENGTH_LONG).show();
-                                }
-                            });
-                        } else {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(getApplicationContext(), "发送失败", Toast.LENGTH_LONG).show();
-                                }
-                            });
-                        }
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        Log.e("DetailUserActivity", response.body().string());
-                        Log.e("DetailUserActivity", String.valueOf(e));
-                    }
-
-                }
-            }
-        });
     }
 }
