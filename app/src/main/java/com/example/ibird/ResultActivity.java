@@ -1,20 +1,47 @@
 package com.example.ibird;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.ViewPager;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
+import com.example.ibird.bean.RecoResult;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.ms.banner.Banner;
+import com.ms.banner.BannerConfig;
+import com.ms.banner.Transformer;
+import com.ms.banner.holder.BannerViewHolder;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.concurrent.TimeUnit;
 
 import me.leefeng.promptlibrary.PromptDialog;
@@ -32,15 +59,30 @@ public class ResultActivity extends AppCompatActivity {
     private PromptDialog promptDialog;
     private String code;
     private String path;
+    private Button btn_return;
+    private Button btn_upload;
 
     private String picPath;
     private JSONObject data;
     private JSONArray result;
+    private List<RecoResult> list = new ArrayList<>();
+    private Banner banner;
+    private RelativeLayout rl_root;
+    private View rootview;
+    private int lastPosition = 0;
+    LinearLayout indicator;
+    private int mIndicatorSelectedResId = R.drawable.indicator;
+    private int mIndicatorUnselectedResId = R.drawable.indicator2;
+    private List<ImageView> indicatorImages = new ArrayList<>();
+
+    public static final MediaType JSON= MediaType.parse("application/json; charset=utf-8");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
+
+        rootview = LayoutInflater.from(this).inflate(R.layout.banner_item, null);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 
@@ -51,6 +93,7 @@ public class ResultActivity extends AppCompatActivity {
         Intent intent = getIntent();
         code = intent.getStringExtra("status");
         path = intent.getStringExtra("path");
+        Log.e("传过来的path", path);
 
         init();
 
@@ -58,33 +101,101 @@ public class ResultActivity extends AppCompatActivity {
     }
 
     public void init(){
-         promptDialog = new PromptDialog(this);
-         promptDialog.showLoading("正在识别");
+        btn_return = findViewById(R.id.btn_return);
+        btn_return.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
-         //recoPic();
 
-         new Handler().postDelayed(new Runnable() {
-             @Override
-             public void run() {
-                 promptDialog.showSuccess("识别完成");
-             }
-         },2000);
+        btn_upload = findViewById(R.id.btn_upload);
+        btn_upload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+        banner = findViewById(R.id.banner);
+        indicator = (LinearLayout) findViewById(R.id.indicator);
+        indicatorImages.clear();
+        promptDialog = new PromptDialog(this);
+
+        promptDialog.showLoading("正在识别");
+        for (int i = 0; i < 5; i++) {
+            ImageView imageView = new ImageView(this);
+            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            LinearLayout.LayoutParams custom_params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            custom_params.leftMargin = 2;
+            custom_params.rightMargin = 2;
+            if (i == 0) {
+                imageView.setImageResource(mIndicatorSelectedResId);
+            } else {
+                imageView.setImageResource(mIndicatorUnselectedResId);
+            }
+            indicatorImages.add(imageView);
+            indicator.addView(imageView, custom_params);
+        }
+
+        new Thread(runnable).start();
+        banner.setAutoPlay(false)
+                .setPages(list, new CustomViewHolder(list, rootview))
+                .setBannerStyle(BannerConfig.NOT_INDICATOR)
+                .setBannerAnimation(Transformer.Scale)
+                .start();
+        banner.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                indicatorImages.get((lastPosition + 5) % 5).setImageResource(mIndicatorUnselectedResId);
+                indicatorImages.get((position + 5) % 5).setImageResource(mIndicatorSelectedResId);
+                lastPosition = position;
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
     }
 
-    public void recoPic(){
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .retryOnConnectionFailure(true)
-                .connectTimeout(20, TimeUnit.SECONDS)
-                .writeTimeout(20, TimeUnit.SECONDS)
-                .readTimeout(20, TimeUnit.SECONDS)
-                .build();
+    Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            Bundle data = msg.getData();
+            String val = data.getString("value");
+            Log.e("TAG","请求结果:" + val);
+        }
+    };
 
+    Runnable runnable = new Runnable(){
+        @Override
+        public void run() {
+            recoPic();
 
-        RequestBody requestBody = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                // .addFormDataPart("headImage", imagePath, image)
-                .addFormDataPart("path", path)
-                .build();
+            Message msg = new Message();
+            Bundle data = new Bundle();
+            data.putString("value","请求结果");
+            msg.setData(data);
+            handler.sendMessage(msg);
+        }
+    };
+
+    public void recoPic() {
+        JSONObject json = new JSONObject();
+        try {
+            json.put("path", path);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestBody requestBody = RequestBody.create(JSON, String.valueOf(json));
 
         final Request request = new Request.Builder()
                 .url("https://weparallelines.top/api/prediction/predict")
@@ -92,67 +203,70 @@ public class ResultActivity extends AppCompatActivity {
                 .post(requestBody)
                 .build();
 
-        okHttpClient.newCall(request).enqueue(new Callback() {
-            //请求错误回调方法
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("ResultActivity", "获取数据失败");
-                Log.e("ResultActivity", String.valueOf(e));
-            }
+        OkHttpClient client = new OkHttpClient();
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String responseData = response.body().string();
-                Log.e("responseData", responseData);
-                if (response.isSuccessful()) {
-                    try {
-                        JSONObject jsonObject = new JSONObject(responseData);
-                        data = jsonObject.getJSONObject("data");
-                        result = data.getJSONArray("result");
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
+        Response response;
+        try {
+            response = client.newCall(request).execute();
+            String responseData = response.body().string();
+            Log.e("responseData", responseData);
+            if (response.isSuccessful()) {
+                try {
+                    Gson gson = new Gson();
+                    JSONObject jsonObject = new JSONObject(responseData);
+                    data = jsonObject.getJSONObject("data");
+                    result = data.getJSONArray("result");
 
-                            }
-                        });
-                        //msg = jsonObject.getString("msg");
-                        //Log.e("返回数据", "code:" + code + " msg:" + msg + " path:" + path);
+                    list.add(gson.fromJson(result.get(0).toString(), RecoResult.class));
+                    list.add(gson.fromJson(result.get(1).toString(), RecoResult.class));
+                    list.add(gson.fromJson(result.get(2).toString(), RecoResult.class));
+                    list.add(gson.fromJson(result.get(3).toString(), RecoResult.class));
+                    list.add(gson.fromJson(result.get(4).toString(), RecoResult.class));
 
-//                        if (statu) {
-//
-//                            String pic = "http://139.199.84.147" + jsonObject.getString("pic");
-//                            SharedPreferences sharedPreferences = getSharedPreferences("theUser", Context.MODE_PRIVATE);
-//                            SharedPreferences.Editor editor = sharedPreferences.edit();
-//                            if (type.equals("avatar")) {
-//                                editor.putString("avater", pic);
-//                                editor.apply();
-//                            } else {
-//                                editor.putString("background", pic);
-//                                editor.apply();
-//                            }
-//                            runOnUiThread(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    Toast.makeText(getApplicationContext(), "成功", Toast.LENGTH_LONG).show();
-//                                }
-//                            });
-//                        } else {
-//                            runOnUiThread(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    Toast.makeText(getApplicationContext(), "发送失败", Toast.LENGTH_LONG).show();
-//                                }
-//                            });
-//                        }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            promptDialog.showSuccess("识别完成");
+                            banner.update(list);
+                        }
+                    });
 
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        Log.e("DetailUserActivity", response.body().string());
-                        Log.e("DetailUserActivity", String.valueOf(e));
-                    }
-
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
             }
-        });
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    class CustomViewHolder implements BannerViewHolder<RecoResult> {
+
+        private TextView tv_bird;
+        private TextView tv_possibility;
+        private ImageView iv_bird;
+        private List<RecoResult> list;
+        private View rootview;
+
+            public CustomViewHolder(List<RecoResult> list, View rootview) {
+                this.list = list;
+                this.rootview = rootview;
+            }
+
+            @Override
+            public View createView(Context context, int position, RecoResult data) {
+            @SuppressLint("InflateParams") View view = LayoutInflater.from(context).inflate(R.layout.banner_item, null);
+            tv_bird = view.findViewById(R.id.tv_bird);
+            tv_possibility = view.findViewById(R.id.tv_possibility);
+            iv_bird = view.findViewById(R.id.iv_bird);
+
+            tv_possibility.setText(String.format("%.2f", list.get(position).getProbability() * 100) + "%");
+            tv_bird.setText(list.get(position).getLabel());
+            String url = "https://weparallelines.top/birds/" + list.get(position).getId() + ".jpg";
+
+            Glide.with(ResultActivity.this).load(url).into(iv_bird);
+            return view;
+        }
     }
 }
