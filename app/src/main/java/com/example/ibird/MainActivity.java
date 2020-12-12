@@ -30,10 +30,12 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.ibird.util.CheckNetUtil;
 import com.pedaily.yc.ycdialoglib.dialog.select.CustomSelectDialog;
 
@@ -65,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
 
     private Button btn_choosePic;
     private LinearLayout btn_login;
+    private TextView tv_username;
+    private ImageView iv_avatar;
     private PromptDialog promptDialog;
     private PromptButton btn_camera = new PromptButton("拍照", null);
     private PromptButton btn_photo = new PromptButton("相册", null);
@@ -112,12 +116,31 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        SharedPreferences sp = getSharedPreferences("login", 0);
+        String avatar = sp.getString("avatar", null);
+        String username = sp.getString("username", null);
+        if (avatar != null){
+            Glide.with(MainActivity.this).load("https://weparallelines.top" + avatar).into(iv_avatar);
+            tv_username.setText(username);
+        }
+
     }
 
     private void init(){
         promptDialog = new PromptDialog(this);
         btn_choosePic = findViewById(R.id.btn_choosePic);
         btn_login = findViewById(R.id.btn_login);
+        iv_avatar = findViewById(R.id.iv_user);
+        tv_username = findViewById(R.id.tv_username);
+
+        SharedPreferences sp = getSharedPreferences("login", 0);
+        String avatar = sp.getString("avatar", null);
+        String username = sp.getString("username", null);
+        if (avatar != null){
+            Glide.with(MainActivity.this).load("https://weparallelines.top" + avatar).into(iv_avatar);
+            tv_username.setText(username);
+        }
+
 
         btn_camera.setListener(new PromptButtonListener() {
             @Override

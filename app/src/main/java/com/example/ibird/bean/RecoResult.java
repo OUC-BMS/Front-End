@@ -4,6 +4,7 @@ public class RecoResult {
     private double probability;
     private String label;
     private int id;
+    private String info;
 
     public RecoResult(double possibility, String name) {
         this.probability = possibility;
@@ -32,5 +33,13 @@ public class RecoResult {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getInfo() {
+        return info;
+    }
+
+    public void setInfo(String info) {
+        this.info = info;
     }
 }

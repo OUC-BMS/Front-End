@@ -2,13 +2,15 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_gravity="center_horizontal">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="45dp"
         android:background="#88FFFFFF"
+        android:gravity="center_horizontal"
         android:orientation="vertical">
         <TextView
             android:layout_width="wrap_content"
@@ -27,16 +29,26 @@
             android:text="90%"
             android:layout_gravity="center_horizontal"
             android:textColor="#000000"/>
-        <TextView
-            android:layout_marginTop="20dp"
+        <ScrollView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="50dp"
-            android:layout_marginRight="50dp"
-            android:text=""
-            android:maxLines="6"
-            android:ellipsize="end"
-            android:textSize="26sp"/>
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginBottom="20dp"
+            android:layout_gravity="center_horizontal">
+            <TextView
+                android:id="@+id/tv_info"
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+
+                android:text="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+                android:textSize="18sp"/>
+        </ScrollView>
+
     </LinearLayout>
     <de.hdodenhof.circleimageview.CircleImageView
         android:layout_width="90dp"

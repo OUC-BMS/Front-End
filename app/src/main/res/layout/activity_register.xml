@@ -110,6 +110,36 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_gravity="center_horizontal">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="5dp">
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginLeft="55dp"
+                    android:background="@drawable/password_icon"
+                    android:layout_gravity="center_vertical"/>
+                <EditText
+                    android:id="@+id/et_email"
+                    android:layout_width="match_parent"
+                    android:hint="Email"
+                    android:layout_marginRight="55dp"
+                    android:layout_height="wrap_content"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#8FFFFFFF"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginBottom="5dp"
+                    android:theme="@style/EditText_white"/>
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center_horizontal">
             <Button
                 android:id="@+id/btn_signup"
                 android:layout_width="match_parent"
@@ -134,7 +164,7 @@
             android:textColor="#D2FFFFFF"
             android:textAllCaps="false"
             android:text="Login"
-            android:layout_marginTop="140dp"
+            android:layout_marginTop="120dp"
             android:layout_gravity="center_horizontal"/>
     </LinearLayout>
 </LinearLayout>

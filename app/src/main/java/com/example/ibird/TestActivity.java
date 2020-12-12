@@ -79,8 +79,10 @@ public class TestActivity extends AppCompatActivity {
                 Log.e("检查网络状态结束", "ok");
                 if (checkNetUtil.initNet()) {
                     new Thread(runnable).start();
+                    btn_test.setClickable(false);
                 }
-                btn_test.setClickable(false);
+                else Toast.makeText(TestActivity.this, "请检查网络", Toast.LENGTH_SHORT);
+
 
 //                if(code.equals("20000")){
 //                    Intent intent = new Intent(TestActivity.this, ResultActivity.class);

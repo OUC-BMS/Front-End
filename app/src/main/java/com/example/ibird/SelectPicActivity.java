@@ -203,7 +203,7 @@ public class SelectPicActivity extends Activity implements View.OnClickListener 
         intent.putExtra("scaleUpIfNeeded", true);
         // aspectX aspectY 是宽高的比例，根据自己情况修改
         intent.putExtra("aspectX", 1);
-        intent.putExtra("aspectY", 1);
+        intent.putExtra("aspectY", 1.5);
         // outputX outputY 是裁剪图片宽高像素
         intent.putExtra("outputX", 100);
         intent.putExtra("outputY", 100);

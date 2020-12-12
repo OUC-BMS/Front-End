@@ -2,28 +2,59 @@ package com.example.ibird;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import com.example.ibird.bean.RecoResult;
+import com.example.ibird.util.CheckNetUtil;
+import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import okhttp3.Cookie;
+import okhttp3.CookieJar;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+import static com.example.ibird.ResultActivity.JSON;
 
 public class LoginActivity extends AppCompatActivity {
 
     private Button btn_register;
+    private Button btn_login;
     private Context context;
+    private EditText et_username;
+    private EditText et_password;
+    private String cookie;
+    int code;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        requestWindowFeature(Window.FEATURE_NO_TITLE);
-//
-//        /*set it to be full screen*/
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
 
         setContentView(R.layout.activity_login);
 
@@ -38,7 +69,25 @@ public class LoginActivity extends AppCompatActivity {
     private void init(){
         context = this;
 
+
+        et_password = findViewById(R.id.et_password);
+        et_username = findViewById(R.id.et_username);
+
         btn_register = findViewById(R.id.btn_register);
+        btn_login = findViewById(R.id.btn_login);
+        btn_login.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("ShowToast")
+            @Override
+            public void onClick(View v) {
+                CheckNetUtil checkNetUtil = new CheckNetUtil(getApplicationContext());
+                Log.e("检查网络状态结束", "ok");
+                if (checkNetUtil.initNet()) {
+                    new Thread(runnable).start();
+                }
+
+
+            }
+        });
         btn_register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -47,5 +96,173 @@ public class LoginActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+//    Handler handler = new Handler(){
+//        @Override
+//        public void handleMessage(Message msg) {
+//            super.handleMessage(msg);
+//            Bundle data = msg.getData();
+//            String val = data.getString("value");
+//            Log.e("TAG","请求结果:" + val);
+//        }
+//    };
+
+    Runnable runnable = new Runnable(){
+        @Override
+        public void run() {
+            register();
+
+//            Message msg = new Message();
+//            Bundle data = new Bundle();
+//            data.putString("value","请求结果");
+//            msg.setData(data);
+//            handler.sendMessage(msg);
+        }
+    };
+
+    Runnable runnable2 = new Runnable(){
+        @Override
+        public void run() {
+            getAvatar();
+        }
+    };
+
+    private void getAvatar(){
+
+        final Request request = new Request.Builder()
+                .url("https://weparallelines.top/api/account/status")
+                .addHeader("Cookie", cookie)
+                .get()
+                .build();
+
+        OkHttpClient client = new OkHttpClient();
+
+        Response response;
+        try {
+            response = client.newCall(request).execute();
+            String responseData = response.body().string();
+            Log.e("responseData拿头像", responseData);
+            if (response.isSuccessful()) {
+                try {
+                    //Gson gson = new Gson();
+                    JSONObject jsonObject = new JSONObject(responseData);
+                    JSONObject data = jsonObject.getJSONObject("data");
+                    boolean isLogin = data.getBoolean("login");
+                    if(isLogin){
+                        String avatar = data.getString("avatar");
+                        SharedPreferences sp = getSharedPreferences("login", 0);
+                        SharedPreferences.Editor editor = sp.edit();
+                        editor.putString("avatar", avatar);
+                        editor.commit();
+                        runOnUiThread(new Runnable() {
+                            @SuppressLint("ShowToast")
+                            @Override
+                            public void run() {
+                                Toast.makeText(LoginActivity.this, "头像登录成功", Toast.LENGTH_SHORT);
+                            }
+                        });
+
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent);
+
+
+                        finish();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }else runOnUiThread(new Runnable() {
+                @SuppressLint("ShowToast")
+                @Override
+                public void run() {
+                    Toast.makeText(LoginActivity.this, "头像登录失败", Toast.LENGTH_SHORT);
+                }
+            });
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void register(){
+        JSONObject json = new JSONObject();
+        try {
+            json.put("username", et_username.getText());
+            json.put("password", et_password.getText());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestBody requestBody = RequestBody.create(JSON, String.valueOf(json));
+
+        final Request request = new Request.Builder()
+                .url("https://weparallelines.top/api/account/login")
+                //.addHeader("Cookie", cookie)
+                .post(requestBody)
+                .build();
+
+        OkHttpClient client = (OkHttpClient) new OkHttpClient.Builder().cookieJar(new CookieJar() {
+            @Override
+            public void saveFromResponse(HttpUrl httpUrl, List<Cookie> cookies) {
+                Log.e("PostWithCookie","保存cookie");
+                Log.e("PostCookie", String.valueOf(cookies));
+                for (int i = 0;i<cookies.size();i++){
+                    Log.e("Cookie"+ i, String.valueOf(cookies.get(i)));
+                    cookie = String.valueOf(cookies.get(i));
+                }
+
+                SharedPreferences sharedPreferences = context.getSharedPreferences("login", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("cookie",cookie);
+                editor.apply();
+            }
+            @Override
+            public List<Cookie> loadForRequest(HttpUrl httpUrl) {
+                List<Cookie> cookies = new ArrayList<>();
+                return cookies != null ? cookies : new ArrayList<Cookie>();
+            }
+        })
+        .build();
+
+        Response response;
+        try {
+            response = client.newCall(request).execute();
+            String responseData = response.body().string();
+            Log.e("responseData登录", responseData);
+            if (response.isSuccessful()) {
+                try {
+                    Gson gson = new Gson();
+                    JSONObject jsonObject = new JSONObject(responseData);
+                    code = jsonObject.getInt("code");
+                    if(code == 20000){
+                        SharedPreferences sp = getSharedPreferences("login", 0);
+                        SharedPreferences.Editor editor = sp.edit();
+                        editor.putString("username", String.valueOf(et_username.getText()));
+                        editor.putString("password", String.valueOf(et_password.getText()));
+                        editor.commit();
+
+                        new Thread(runnable2).start();
+
+                        runOnUiThread(new Runnable() {
+                            @SuppressLint("ShowToast")
+                            @Override
+                            public void run() {
+                                Toast.makeText(LoginActivity.this, "登录成功", Toast.LENGTH_SHORT);
+                            }
+                        });
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }else runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(LoginActivity.this, "登录失败", Toast.LENGTH_SHORT);
+                }
+            });
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
