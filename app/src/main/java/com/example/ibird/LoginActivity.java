@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.ibird.bean.RecoResult;
 import com.example.ibird.util.CheckNetUtil;
 import com.google.gson.Gson;
@@ -75,6 +76,16 @@ public class LoginActivity extends AppCompatActivity {
 
         btn_register = findViewById(R.id.btn_register);
         btn_login = findViewById(R.id.btn_login);
+
+        SharedPreferences sp = getSharedPreferences("login", 0);
+        String avatar = sp.getString("avatar", null);
+        String password = sp.getString("password", null);
+        String username = sp.getString("username", null);
+        if (password != null && username != null){
+            et_username.setText(username);
+            et_password.setText(password);
+        }
+
         btn_login.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("ShowToast")
             @Override
@@ -234,6 +245,9 @@ public class LoginActivity extends AppCompatActivity {
                     Gson gson = new Gson();
                     JSONObject jsonObject = new JSONObject(responseData);
                     code = jsonObject.getInt("code");
+                    String msg = jsonObject.getString("msg");
+                    byte[] converttoBytes = msg.getBytes("UTF-8");
+                    final String s2 = new String(converttoBytes, "UTF-8");
                     if(code == 20000){
                         SharedPreferences sp = getSharedPreferences("login", 0);
                         SharedPreferences.Editor editor = sp.edit();
@@ -242,25 +256,29 @@ public class LoginActivity extends AppCompatActivity {
                         editor.commit();
 
                         new Thread(runnable2).start();
-
                         runOnUiThread(new Runnable() {
-                            @SuppressLint("ShowToast")
                             @Override
                             public void run() {
-                                Toast.makeText(LoginActivity.this, "登录成功", Toast.LENGTH_SHORT);
+                                Toast.makeText(LoginActivity.this, "登录成功", Toast.LENGTH_SHORT).show();
                             }
                         });
-                    }
+
+                    }else
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(LoginActivity.this, s2, Toast.LENGTH_SHORT).show();
+                            }
+                        });
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }else runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(LoginActivity.this, "登录失败", Toast.LENGTH_SHORT);
+                    Toast.makeText(LoginActivity.this, "登录失败", Toast.LENGTH_SHORT).show();
                 }
             });
-
         } catch (IOException e) {
             e.printStackTrace();
         }

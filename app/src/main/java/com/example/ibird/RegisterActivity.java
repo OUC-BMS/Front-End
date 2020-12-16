@@ -124,19 +124,36 @@ public class RegisterActivity extends AppCompatActivity {
                     Gson gson = new Gson();
                     JSONObject jsonObject = new JSONObject(responseData);
                     code = jsonObject.getInt("code");
+                    String msg = jsonObject.getString("msg");
+                    byte[] converttoBytes = msg.getBytes("UTF-8");
+                    final String s2 = new String(converttoBytes, "UTF-8");
                     if(code == 20000){
-                        //Toast.makeText(RegisterActivity.this, "注册成功，请登录", Toast.LENGTH_SHORT);
 
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(RegisterActivity.this, "注册成功，请登录", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                         Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                         startActivity(intent);
                         finish();
-                    }
+                    }else runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(RegisterActivity.this, s2, Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }else
-                    Toast.makeText(RegisterActivity.this, "注册失败", Toast.LENGTH_SHORT);
-
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(RegisterActivity.this, "注册失败", Toast.LENGTH_SHORT).show();
+                    }
+                });
         } catch (IOException e) {
             e.printStackTrace();
         }

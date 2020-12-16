@@ -128,7 +128,12 @@ public class SelectPicActivity extends Activity implements View.OnClickListener 
             intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, photoUri);
             startActivityForResult(intent, TAKE_PHOTO_CODE);
         } else {
-            Toast.makeText(this, "内存卡不存在", Toast.LENGTH_LONG).show();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(SelectPicActivity.this, "内存卡不存在", Toast.LENGTH_LONG).show();
+                }
+            });
         }
     }
 
@@ -160,7 +165,12 @@ public class SelectPicActivity extends Activity implements View.OnClickListener 
 
                     startPhotoZoom(uri, PHOTO_CROP_CODE);
                 } else {
-                    Toast.makeText(this, "图片选择失败", Toast.LENGTH_LONG).show();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(SelectPicActivity.this, "图片选择失败", Toast.LENGTH_LONG).show();
+                        }
+                    });
                 }
             } else if (requestCode == TAKE_PHOTO_CODE) {
                 String[] pojo = {MediaStore.Images.Media.DATA};

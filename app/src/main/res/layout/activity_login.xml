@@ -97,6 +97,7 @@
                     android:layout_width="match_parent"
                     android:hint="Password"
                     android:layout_marginRight="55dp"
+                    android:inputType="textPassword"
                     android:layout_height="wrap_content"
                     android:textColor="#FFFFFF"
                     android:textColorHint="#8FFFFFFF"

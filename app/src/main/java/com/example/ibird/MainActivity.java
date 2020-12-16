@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btn_choosePic;
     private LinearLayout btn_login;
     private TextView tv_username;
+    private ImageView btn_logout;
     private ImageView iv_avatar;
     private PromptDialog promptDialog;
     private PromptButton btn_camera = new PromptButton("拍照", null);
@@ -122,7 +123,8 @@ public class MainActivity extends AppCompatActivity {
         if (avatar != null){
             Glide.with(MainActivity.this).load("https://weparallelines.top" + avatar).into(iv_avatar);
             tv_username.setText(username);
-        }
+            btn_logout.setVisibility(View.VISIBLE);
+        }else btn_logout.setVisibility(View.INVISIBLE);
 
     }
 
@@ -132,6 +134,7 @@ public class MainActivity extends AppCompatActivity {
         btn_login = findViewById(R.id.btn_login);
         iv_avatar = findViewById(R.id.iv_user);
         tv_username = findViewById(R.id.tv_username);
+        btn_logout = findViewById(R.id.btn_logout);
 
         SharedPreferences sp = getSharedPreferences("login", 0);
         String avatar = sp.getString("avatar", null);
@@ -139,9 +142,8 @@ public class MainActivity extends AppCompatActivity {
         if (avatar != null){
             Glide.with(MainActivity.this).load("https://weparallelines.top" + avatar).into(iv_avatar);
             tv_username.setText(username);
-        }
-
-
+            btn_logout.setVisibility(View.VISIBLE);
+        }else btn_logout.setVisibility(View.INVISIBLE);
         btn_camera.setListener(new PromptButtonListener() {
             @Override
             public void onClick(PromptButton promptButton) {
@@ -153,6 +155,22 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(PromptButton promptButton) {
                 pickPhoto();
+            }
+        });
+
+        btn_logout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences sp = getSharedPreferences("login", 0);
+                SharedPreferences.Editor editor = sp.edit();
+                editor.putString("username", null);
+                editor.putString("password", null);
+                editor.putString("avatar", null);
+                editor.commit();
+
+                tv_username.setText("登录");
+                btn_logout.setVisibility(View.INVISIBLE);
+                Glide.with(MainActivity.this).load(R.drawable.avater2).into(iv_avatar);
             }
         });
 
@@ -230,7 +248,12 @@ public class MainActivity extends AppCompatActivity {
 
                     startPhotoZoom(uri, PHOTO_CROP_CODE);
                 } else {
-                    Toast.makeText(this, "图片选择失败", Toast.LENGTH_LONG).show();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity.this, "图片选择失败", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
             } else if (requestCode == TAKE_PHOTO_CODE) {
                 String[] pojo = {MediaStore.Images.Media.DATA};
@@ -247,7 +270,13 @@ public class MainActivity extends AppCompatActivity {
                     photoUri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", new File(picPath));
                     startPhotoZoom(photoUri, PHOTO_CROP_CODE);
                 } else {
-                    Toast.makeText(this, "图片选择失败", Toast.LENGTH_LONG).show();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity.this, "图片选择失败", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
                 }
             } else if (requestCode == PHOTO_CROP_CODE) {
                 if (photoUri != null) {

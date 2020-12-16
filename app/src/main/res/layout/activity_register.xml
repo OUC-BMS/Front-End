@@ -65,7 +65,7 @@
                 <EditText
                     android:id="@+id/et_username"
                     android:layout_width="match_parent"
-                    android:hint="Username"
+                    android:hint="Username(4~23)"
                     android:layout_marginRight="55dp"
                     android:layout_height="wrap_content"
                     android:textColor="#FFFFFF"
@@ -95,7 +95,8 @@
                 <EditText
                     android:id="@+id/et_password"
                     android:layout_width="match_parent"
-                    android:hint="Password"
+                    android:hint="Password(6~20)"
+                    android:inputType="textPassword"
                     android:layout_marginRight="55dp"
                     android:layout_height="wrap_content"
                     android:textColor="#FFFFFF"
@@ -117,10 +118,10 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="5dp">
                 <ImageView
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
                     android:layout_marginLeft="55dp"
-                    android:background="@drawable/password_icon"
+                    android:background="@drawable/email"
                     android:layout_gravity="center_vertical"/>
                 <EditText
                     android:id="@+id/et_email"

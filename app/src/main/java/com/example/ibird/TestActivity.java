@@ -81,7 +81,6 @@ public class TestActivity extends AppCompatActivity {
                     new Thread(runnable).start();
                     btn_test.setClickable(false);
                 }
-                else Toast.makeText(TestActivity.this, "请检查网络", Toast.LENGTH_SHORT);
 
 
 //                if(code.equals("20000")){

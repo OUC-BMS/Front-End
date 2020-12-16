@@ -288,7 +288,6 @@ public class ResultActivity extends AppCompatActivity implements OnPermissionCal
          */
         @Override
         public void onLocationChanged(Location location) {
-            Toast.makeText(ResultActivity.this, "onLocationChanged函数被触发！", Toast.LENGTH_SHORT).show();
             updateUI(location);
             Log.i("GPS", "时间：" + location.getTime());
             Log.i("GPS", "经度：" + location.getLongitude());
