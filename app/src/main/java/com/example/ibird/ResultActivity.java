@@ -621,17 +621,16 @@ public class ResultActivity extends AppCompatActivity implements OnPermissionCal
                     public void onViewClick(BindViewHolder viewHolder, View view, TDialog tDialog) {
                         EditText editText = viewHolder.getView(R.id.editText);
                         content = editText.getText().toString().trim();
+                        InputMethodManager imm =  (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                        if(imm != null) {
+                            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                        }
                         CheckNetUtil checkNetUtil = new CheckNetUtil(getApplicationContext());
                         Log.e("检查网络状态结束", "ok");
                         if (checkNetUtil.initNet()) {
                             new Thread(runnable3).start();
                         }
                         tDialog.dismiss();
-                        InputMethodManager imm =  (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                        if(imm != null) {
-                            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                        }
-
                     }
                 })
                 .create()

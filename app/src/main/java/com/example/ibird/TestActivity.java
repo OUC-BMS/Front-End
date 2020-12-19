@@ -159,20 +159,21 @@ public class TestActivity extends AppCompatActivity {
             String jsonString = response.body().string();
             if(response.isSuccessful()){
                 JSONObject jsonObject = new JSONObject(jsonString);
-                code = jsonObject.getString("code");
+                code = String.valueOf(jsonObject.getInt("code"));
                 data = jsonObject.getJSONObject("data");
                 msg = jsonObject.getString("msg");
                 path = data.getString("path");
                 Log.e("data", data.toString());
                 Log.e("path", path);
+                if(code.equals("20000")){
+                    Intent intent = new Intent(TestActivity.this, ResultActivity.class);
+                    intent.putExtra("status", code);
+                    intent.putExtra("path", path);
+                    startActivity(intent);
+                    finish();
+                }
             }
-            if(code.equals("20000")){
-                Intent intent = new Intent(TestActivity.this, ResultActivity.class);
-                intent.putExtra("status", code);
-                intent.putExtra("path", path);
-                startActivity(intent);
-                finish();
-            }
+
         } catch (IOException | JSONException e) {
             Log.d("出错","upload IOException ",e);
         }

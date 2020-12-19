@@ -263,11 +263,10 @@ public class MainActivity extends AppCompatActivity {
                     photoUri = data.getData();
                     picPath = uriToFilePath(photoUri);
                     File file = new File(picPath);
-//                    if (!file.getParentFile().exists()) {
-//                        file.getParentFile().mkdirs();
-//                    }
 
                     Uri uri = getImageContentUri(context, file);
+                    Log.e("转换得到的uri", String.valueOf(uri));
+                    Log.e("直接得到的uri", String.valueOf(photoUri));
 
                     startPhotoZoom(uri, PHOTO_CROP_CODE);
                 } else {
