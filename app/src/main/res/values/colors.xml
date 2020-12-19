@@ -3,4 +3,11 @@
     <color name="colorPrimary">#007a99</color>
     <color name="colorPrimaryDark">#005266</color>
     <color name="colorAccent">#005266</color>
+
+
+    <!--灰色-->
+    <color name="T_99">#999999</color>
+    <!--白色-->
+    <color name="T_FF">#ffffff</color>
+    <color name="topic">#627984</color>
 </resources>

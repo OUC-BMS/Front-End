@@ -1,9 +1,10 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
-        maven { url 'https://jitpack.io' }
         mavenCentral()
 
+        maven { url 'https://jitpack.io' }
+        jcenter()
         maven{ url'https://maven.aliyun.com/nexus/content/groups/public/' }
         maven{ url'http://maven.aliyun.com/nexus/content/repositories/jcenter'}
 
@@ -15,7 +16,7 @@ buildscript {
         maven { url 'https://maven.aliyun.com/repository/central/' }
 
         google()
-        jcenter()
+
     }
     dependencies {
         classpath "com.android.tools.build:gradle:3.6.3"
@@ -27,12 +28,10 @@ buildscript {
 
 allprojects {
     repositories {
-
-
-        maven { url 'https://jitpack.io' }
         mavenCentral()
 
-
+        maven { url 'https://jitpack.io' }
+        jcenter()
         maven{ url'http://maven.aliyun.com/nexus/content/groups/public/' }
         maven{ url'http://maven.aliyun.com/nexus/content/repositories/jcenter'}
 
@@ -43,7 +42,7 @@ allprojects {
         maven { url 'https://maven.aliyun.com/repository/jcenter/'}
         maven { url 'https://maven.aliyun.com/repository/central/'}
         google()
-        jcenter()
+
 
 
     }

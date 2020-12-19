@@ -37,6 +37,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.ibird.util.CheckNetUtil;
+import com.hb.dialog.myDialog.MyAlertDialog;
 import com.pedaily.yc.ycdialoglib.dialog.select.CustomSelectDialog;
 
 import org.json.JSONException;
@@ -161,16 +162,38 @@ public class MainActivity extends AppCompatActivity {
         btn_logout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SharedPreferences sp = getSharedPreferences("login", 0);
-                SharedPreferences.Editor editor = sp.edit();
-                editor.putString("username", null);
-                editor.putString("password", null);
-                editor.putString("avatar", null);
-                editor.commit();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        MyAlertDialog myAlertDialog = new MyAlertDialog(context).builder()
+                                .setTitle("退出")
+                                .setMsg("确定要退出登录吗？")
+                                .setPositiveButton("确认", new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        SharedPreferences sp = getSharedPreferences("login", 0);
+                                        SharedPreferences.Editor editor = sp.edit();
+                                        editor.putString("username", null);
+                                        editor.putString("password", null);
+                                        editor.putString("avatar", null);
+                                        editor.putString("cookie", null);
+                                        editor.commit();
 
-                tv_username.setText("登录");
-                btn_logout.setVisibility(View.INVISIBLE);
-                Glide.with(MainActivity.this).load(R.drawable.avater2).into(iv_avatar);
+                                        Toast.makeText(context, "已退出", Toast.LENGTH_SHORT).show();
+
+                                        tv_username.setText("登录");
+                                        btn_logout.setVisibility(View.INVISIBLE);
+                                        Glide.with(MainActivity.this).load(R.drawable.avater2).into(iv_avatar);
+                                    }
+                                }).setNegativeButton("取消", new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+
+                                    }
+                                });
+                        myAlertDialog.show();
+                    }
+                });
             }
         });
 

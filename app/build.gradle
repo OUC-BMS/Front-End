@@ -51,4 +51,6 @@ dependencies {
 //    implementation 'com.youth.banner:banner:2.1.0'
     implementation 'com.google.code.gson:gson:2.8.4'
     implementation 'com.github.k0shk0sh:PermissionHelper:1.1.0'
+    implementation 'com.timmy.tdialog:tdialog:2.1.1'
+    implementation 'com.github.HanHuoBin:BaseDialog:1.2.0'
 }

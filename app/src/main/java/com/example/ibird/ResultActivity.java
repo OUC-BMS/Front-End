@@ -23,13 +23,19 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -43,10 +49,15 @@ import com.fastaccess.permission.base.PermissionHelper;
 import com.fastaccess.permission.base.callback.OnPermissionCallback;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.hb.dialog.myDialog.MyAlertDialog;
 import com.ms.banner.Banner;
 import com.ms.banner.BannerConfig;
 import com.ms.banner.Transformer;
 import com.ms.banner.holder.BannerViewHolder;
+import com.timmy.tdialog.TDialog;
+import com.timmy.tdialog.base.BindViewHolder;
+import com.timmy.tdialog.listener.OnBindViewListener;
+import com.timmy.tdialog.listener.OnViewClickListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -58,6 +69,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import me.leefeng.promptlibrary.PromptDialog;
@@ -78,6 +91,7 @@ public class ResultActivity extends AppCompatActivity implements OnPermissionCal
     private PromptDialog promptDialog;
     private String code;
     private String path;
+    private String content;
     private Button btn_return;
     private Button btn_upload;
 
@@ -168,7 +182,6 @@ public class ResultActivity extends AppCompatActivity implements OnPermissionCal
                 Log.e("检查网络状态结束", "ok");
                 if (checkNetUtil.initNet()) {
                     new Thread(runnable2).start();
-
                 }
             }
         });
@@ -360,6 +373,13 @@ public class ResultActivity extends AppCompatActivity implements OnPermissionCal
         }
     };
 
+    Runnable runnable3 = new Runnable(){
+        @Override
+        public void run() {
+            publish();
+        }
+    };
+
     public void upload(){
         JSONObject json = new JSONObject();
         try {
@@ -384,11 +404,100 @@ public class ResultActivity extends AppCompatActivity implements OnPermissionCal
             response = client.newCall(request).execute();
             String responseData = response.body().string();
             Log.e("responseData", responseData);
+            JSONObject jsonObject = new JSONObject(responseData);
+            String msg = jsonObject.getString("msg");
+            int code = jsonObject.getInt("code");
             if (response.isSuccessful()) {
+                if (code == 20000){
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            MyAlertDialog myAlertDialog = new MyAlertDialog(context).builder()
+                                    .setTitle("上传成功")
+                                    .setMsg("添加一句话发表到动态？")
+                                    .setPositiveButton("确认", new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    evaluateDialog();
+                                                }
+                                            });
+                                        }
+                                    }).setNegativeButton("取消", new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
 
+                                        }
+                                    });
+                            myAlertDialog.show();
+                        }
+                    });
+                }else {
+                    byte[] converttoBytes = msg.getBytes("UTF-8");
+                    final String s2 = new String(converttoBytes, "UTF-8");
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(ResultActivity.this, s2, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
             }
 
-        } catch (IOException e) {
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void publish(){
+        JSONObject json = new JSONObject();
+        try {
+            json.put("path", path);
+            json.put("content", content);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestBody requestBody = RequestBody.create(JSON, String.valueOf(json));
+
+        final Request request = new Request.Builder()
+                .url("https://weparallelines.top/api/post/give_post")
+                .addHeader("Cookie", cookie)
+                .post(requestBody)
+                .build();
+
+        OkHttpClient client = new OkHttpClient();
+
+        Response response;
+        try {
+            response = client.newCall(request).execute();
+            String responseData = response.body().string();
+            Log.e("responseData", responseData);
+            JSONObject jsonObject = new JSONObject(responseData);
+            String msg = jsonObject.getString("msg");
+            int code = jsonObject.getInt("code");
+            if (response.isSuccessful()) {
+                if (code == 20000){
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(context, "发表成功", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }else {
+                    byte[] converttoBytes = msg.getBytes("UTF-8");
+                    final String s2 = new String(converttoBytes, "UTF-8");
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(ResultActivity.this, s2, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+
+        } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
     }
@@ -444,6 +553,89 @@ public class ResultActivity extends AppCompatActivity implements OnPermissionCal
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    //评价 弹出输入框
+    public void evaluateDialog() {
+        new TDialog.Builder(getSupportFragmentManager())
+                .setLayoutRes(R.layout.dialog_evaluate)
+                .setScreenWidthAspect(this, 1.0f)
+                .setGravity(Gravity.BOTTOM)
+                .addOnClickListener(R.id.btn_evluate)
+                .setOnBindViewListener(new OnBindViewListener() {
+                    @Override
+                    public void bindView(BindViewHolder viewHolder) {
+                        final EditText editText = viewHolder.getView(R.id.editText);
+                        editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                            /**
+                             *
+                             * @param v 被监听的对象
+                             * @param actionId  动作标识符,如果值等于EditorInfo.IME_NULL，则回车键被按下。
+                             * @param event    如果由输入键触发，这是事件；否则，这是空的(比如非输入键触发是空的)。
+                             * @return 返回你的动作
+                             */
+                            @Override
+                            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                                Log.e("多行监听", actionId + "\t" + KeyEvent.KEYCODE_ENTER);
+                                return event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER);
+
+                            }
+                        });
+                        editText.addTextChangedListener(new TextWatcher() {
+                            @Override
+                            public void onTextChanged(CharSequence s, int start, int before,
+                                                      int count) {
+                                if (s.toString().contains(" ")) {
+                                    String[] str = s.toString().split(" ");
+                                    String str1 = "";
+                                    for (int i = 0; i < str.length; i++) {
+                                        str1 += str[i];
+                                    }
+                                    editText.setText(str1);
+                                    editText.setSelection(start);
+                                }
+                            }
+                            @Override
+                            public void afterTextChanged(Editable s) {
+                            }
+                            @Override
+                            public void beforeTextChanged(CharSequence s, int start, int count,
+                                                          int after) {
+                            }
+                        });
+                        editText.setFocusable(true);
+                        editText.setFocusableInTouchMode(true);
+                        editText.requestFocus();
+                        Timer timer = new Timer();
+                        timer.schedule(new TimerTask(){
+                            @Override
+                            public void run() {
+                                InputMethodManager imm = (InputMethodManager) editText.getContext( ).getSystemService(Context.INPUT_METHOD_SERVICE);
+                                imm.showSoftInput(editText,InputMethodManager.SHOW_FORCED);
+                            }
+                        }, 300);
+                    }
+                })
+                .setOnViewClickListener(new OnViewClickListener() {
+                    @Override
+                    public void onViewClick(BindViewHolder viewHolder, View view, TDialog tDialog) {
+                        EditText editText = viewHolder.getView(R.id.editText);
+                        content = editText.getText().toString().trim();
+                        CheckNetUtil checkNetUtil = new CheckNetUtil(getApplicationContext());
+                        Log.e("检查网络状态结束", "ok");
+                        if (checkNetUtil.initNet()) {
+                            new Thread(runnable3).start();
+                        }
+                        tDialog.dismiss();
+                        InputMethodManager imm =  (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                        if(imm != null) {
+                            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                        }
+
+                    }
+                })
+                .create()
+                .show();
     }
 
     @Override
