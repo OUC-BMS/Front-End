@@ -132,69 +132,6 @@ public class LoginActivity extends AppCompatActivity {
         }
     };
 
-    Runnable runnable2 = new Runnable(){
-        @Override
-        public void run() {
-            getAvatar();
-        }
-    };
-
-    private void getAvatar(){
-
-        final Request request = new Request.Builder()
-                .url("https://weparallelines.top/api/account/status")
-                .addHeader("Cookie", cookie)
-                .get()
-                .build();
-
-        OkHttpClient client = new OkHttpClient();
-
-        Response response;
-        try {
-            response = client.newCall(request).execute();
-            String responseData = response.body().string();
-            Log.e("responseData拿头像", responseData);
-            if (response.isSuccessful()) {
-                try {
-                    //Gson gson = new Gson();
-                    JSONObject jsonObject = new JSONObject(responseData);
-                    JSONObject data = jsonObject.getJSONObject("data");
-                    boolean isLogin = data.getBoolean("login");
-                    if(isLogin){
-                        String avatar = data.getString("avatar");
-                        SharedPreferences sp = getSharedPreferences("login", 0);
-                        SharedPreferences.Editor editor = sp.edit();
-                        editor.putString("avatar", avatar);
-                        editor.commit();
-                        runOnUiThread(new Runnable() {
-                            @SuppressLint("ShowToast")
-                            @Override
-                            public void run() {
-                                Toast.makeText(LoginActivity.this, "头像登录成功", Toast.LENGTH_SHORT);
-                            }
-                        });
-
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        startActivity(intent);
-
-
-                        finish();
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }else runOnUiThread(new Runnable() {
-                @SuppressLint("ShowToast")
-                @Override
-                public void run() {
-                    Toast.makeText(LoginActivity.this, "头像登录失败", Toast.LENGTH_SHORT);
-                }
-            });
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     private void register(){
         JSONObject json = new JSONObject();
@@ -255,13 +192,8 @@ public class LoginActivity extends AppCompatActivity {
                         editor.putString("password", String.valueOf(et_password.getText()));
                         editor.commit();
 
-                        new Thread(runnable2).start();
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(LoginActivity.this, "登录成功", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                        //new Thread(runnable2).start();
+                        finish();
 
                     }else
                         runOnUiThread(new Runnable() {

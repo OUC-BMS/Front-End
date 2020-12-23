@@ -85,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
     //图片文件路径
     private String picPath;
     private Context context;
+    private String cookie;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -118,14 +119,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+
         SharedPreferences sp = getSharedPreferences("login", 0);
         String avatar = sp.getString("avatar", null);
         String username = sp.getString("username", null);
+        cookie = sp.getString("cookie", null);
         if (avatar != null){
             Glide.with(MainActivity.this).load("https://weparallelines.top" + avatar).into(iv_avatar);
             tv_username.setText(username);
             btn_logout.setVisibility(View.VISIBLE);
         }else btn_logout.setVisibility(View.INVISIBLE);
+        if(cookie != null){
+            CheckNetUtil checkNetUtil = new CheckNetUtil(getApplicationContext());
+            Log.e("检查网络状态结束", "ok");
+            if (checkNetUtil.initNet()) {
+                new Thread(runnable).start();
+            }
+        }
 
     }
 
@@ -140,9 +151,11 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences sp = getSharedPreferences("login", 0);
         String avatar = sp.getString("avatar", null);
         String username = sp.getString("username", null);
+        cookie = sp.getString("cookie", null);
         if (avatar != null){
             Glide.with(MainActivity.this).load("https://weparallelines.top" + avatar).into(iv_avatar);
             tv_username.setText(username);
+            tv_username.setClickable(false);
             btn_logout.setVisibility(View.VISIBLE);
         }else btn_logout.setVisibility(View.INVISIBLE);
         btn_camera.setListener(new PromptButtonListener() {
@@ -184,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
                                         tv_username.setText("登录");
                                         btn_logout.setVisibility(View.INVISIBLE);
                                         Glide.with(MainActivity.this).load(R.drawable.avater2).into(iv_avatar);
+                                        tv_username.setClickable(true);
                                     }
                                 }).setNegativeButton("取消", new View.OnClickListener() {
                                     @Override
@@ -197,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        btn_login.setOnClickListener(new View.OnClickListener() {
+        tv_username.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, LoginActivity.class);
@@ -219,6 +233,78 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        if (cookie != null){
+            CheckNetUtil checkNetUtil = new CheckNetUtil(getApplicationContext());
+            Log.e("检查网络状态结束", "ok");
+            if (checkNetUtil.initNet()) {
+                new Thread(runnable).start();
+            }
+        }
+    }
+
+    Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            getAvatar();
+        }
+    };
+
+    private void getAvatar(){
+
+        final Request request = new Request.Builder()
+                .url("https://weparallelines.top/api/account/status")
+                .addHeader("Cookie", cookie)
+                .get()
+                .build();
+
+        OkHttpClient client = new OkHttpClient();
+
+        Response response;
+        try {
+            response = client.newCall(request).execute();
+            String responseData = response.body().string();
+            Log.e("responseData拿头像", responseData);
+            if (response.isSuccessful()) {
+                try {
+                    //Gson gson = new Gson();
+                    JSONObject jsonObject = new JSONObject(responseData);
+                    JSONObject data = jsonObject.getJSONObject("data");
+                    boolean isLogin = data.getBoolean("login");
+                    final String username = data.getString("username");
+                    if(isLogin){
+                        final String avatar = data.getString("avatar");
+                        SharedPreferences sp = getSharedPreferences("login", 0);
+                        SharedPreferences.Editor editor = sp.edit();
+                        editor.putString("avatar", avatar);
+                        editor.putString("username", username);
+                        editor.commit();
+                        runOnUiThread(new Runnable() {
+                            @SuppressLint("ShowToast")
+                            @Override
+                            public void run() {
+                                tv_username.setText(username);
+                                Glide.with(MainActivity.this).load("https://weparallelines.top" + avatar).into(iv_avatar);
+                                btn_logout.setVisibility(View.VISIBLE);
+                                tv_username.setClickable(false);
+                                Toast.makeText(MainActivity.this, "登录成功", Toast.LENGTH_SHORT);
+                            }
+                        });
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }else runOnUiThread(new Runnable() {
+                @SuppressLint("ShowToast")
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, "登录失败", Toast.LENGTH_SHORT);
+                }
+            });
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
