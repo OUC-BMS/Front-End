@@ -14,10 +14,6 @@
         android:requestLegacyExternalStorage="true"
         android:theme="@style/AppTheme"
         tools:targetApi="q">
-        <activity android:name=".ResultActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".TestActivity"
-            android:screenOrientation="portrait"/>
         <activity android:name=".RegisterActivity"
             android:screenOrientation="portrait"/>
         <activity android:name=".LoginActivity"
