@@ -6,12 +6,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/bg_main3"
+    android:background="@drawable/bg_main4"
     tools:context=".MainActivity">
     <ImageView
-        android:layout_width="150sp"
-        android:layout_height="60dp"
-        android:background="@drawable/ibird_text1"
+        android:layout_width="200sp"
+        android:layout_height="45dp"
+        android:background="@drawable/logo_white"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="100dp"/>
     <LinearLayout
@@ -27,7 +27,7 @@
             android:id="@+id/iv_user"
             android:layout_width="85dp"
             android:layout_height="85dp"
-            android:background="@drawable/avater2"
+            android:background="@drawable/avater3"
             android:layout_gravity="center_horizontal" />
             <TextView
                 android:id="@+id/tv_username"
@@ -65,7 +65,7 @@
         android:background="@drawable/btn_rounded_white"
         android:textColor="#CBFFFFFF"
         android:textAllCaps="false"
-        android:text="选择图片"
+        android:text="进入图书馆"
         android:layout_marginBottom="150dp"
         android:textStyle="bold"
         android:layout_gravity="end"/>
