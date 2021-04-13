@@ -1,4 +1,4 @@
-package com.example.ibird;
+package com.example.ibook;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -8,25 +8,20 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.example.ibird.bean.RecoResult;
-import com.example.ibird.util.CheckNetUtil;
+import com.example.ibook.R;
+import com.example.ibook.util.CheckNetUtil;
 import com.google.gson.Gson;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,14 +29,12 @@ import java.util.List;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import static com.example.ibird.ResultActivity.JSON;
+import static com.example.ibook.ResultActivity.JSON;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -102,7 +95,7 @@ public class LoginActivity extends AppCompatActivity {
         btn_register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+                Intent intent = new Intent(LoginActivity.this, com.example.ibook.RegisterActivity.class);
                 startActivity(intent);
                 finish();
             }

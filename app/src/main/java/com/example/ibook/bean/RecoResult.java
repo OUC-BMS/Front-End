@@ -1,4 +1,4 @@
-package com.example.ibird.bean;
+package com.example.ibook.bean;
 
 public class RecoResult {
     private double probability;

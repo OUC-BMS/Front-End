@@ -1,21 +1,20 @@
-package com.example.ibird;
+package com.example.ibook;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.ibird.util.CheckNetUtil;
+import com.example.ibook.R;
+import com.example.ibook.util.CheckNetUtil;
 import com.google.gson.Gson;
 
 import org.json.JSONException;
@@ -28,7 +27,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import static com.example.ibird.ResultActivity.JSON;
+import static com.example.ibook.ResultActivity.JSON;
 
 public class RegisterActivity extends AppCompatActivity {
 

@@ -1,4 +1,4 @@
-package com.example.ibird;
+package com.example.ibook;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,7 +16,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -26,9 +25,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -36,31 +33,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.example.ibird.util.CheckNetUtil;
+import com.example.ibook.R;
+import com.example.ibook.util.CheckNetUtil;
 import com.hb.dialog.myDialog.MyAlertDialog;
-import com.pedaily.yc.ycdialoglib.dialog.select.CustomSelectDialog;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import me.leefeng.promptlibrary.PromptButton;
 import me.leefeng.promptlibrary.PromptButtonListener;
 import me.leefeng.promptlibrary.PromptDialog;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
-import site.gemus.openingstartanimation.NormalDrawStrategy;
 import site.gemus.openingstartanimation.OpeningStartAnimation;
 import site.gemus.openingstartanimation.RedYellowBlueDrawStrategy;
 
@@ -107,13 +95,13 @@ public class MainActivity extends AppCompatActivity {
 
         Resources resources = MainActivity.this.getResources();
         @SuppressLint("UseCompatLoadingForDrawables") Drawable drawable = resources.getDrawable(R.drawable.ibird_logo3);
-        OpeningStartAnimation openingStartAnimation = new OpeningStartAnimation.Builder(this)
-                .setDrawStategy(new RedYellowBlueDrawStrategy())
-                .setAppIcon(drawable)
-                .setAppStatement("没有人比我们更懂鸟")
-                .setAnimationFinishTime(400)
-                .create();
-        openingStartAnimation.show(this);
+//        OpeningStartAnimation openingStartAnimation = new OpeningStartAnimation.Builder(this)
+//                .setDrawStategy(new RedYellowBlueDrawStrategy())
+//                .setAppIcon(drawable)
+//                .setAppStatement("没有人比我们更懂图书管理")
+//                .setAnimationFinishTime(400)
+//                .create();
+//        openingStartAnimation.show(this);
     }
 
     @Override
@@ -221,15 +209,9 @@ public class MainActivity extends AppCompatActivity {
         btn_choosePic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Intent intent = new Intent(MainActivity.this, SelectPicActivity.class);
-//                startActivity(intent);
-                PromptButton cancle = new PromptButton("取消", null);
-                cancle.setTextColor(Color.parseColor("#0076ff"));
-                //设置显示的文字大小及颜色
-                //promptDialog.getAlertDefaultBuilder().textSize(12).textColor(Color.GRAY);
-                //默认两个按钮为Alert对话框，大于三个按钮的为底部SHeet形式展现
-                promptDialog.showAlertSheet("", true, cancle,
-                        btn_camera, btn_photo);
+                Intent intent = new Intent(MainActivity.this, UserActivity.class);
+                startActivity(intent);
+
 
             }
         });
@@ -389,9 +371,9 @@ public class MainActivity extends AppCompatActivity {
             } else if (requestCode == PHOTO_CROP_CODE) {
                 if (photoUri != null) {
 
-                    Intent intent = new Intent(MainActivity.this, TestActivity.class);Log.e("DetailUserActivity", picPath);
-                    intent.putExtra("path", picPath);
-                    startActivity(intent);
+//                    Intent intent = new Intent(MainActivity.this, TestActivity.class);Log.e("DetailUserActivity", picPath);
+//                    intent.putExtra("path", picPath);
+//                    startActivity(intent);
                 }
             }
         }

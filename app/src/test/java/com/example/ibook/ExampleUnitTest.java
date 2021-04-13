@@ -1,4 +1,4 @@
-package com.example.ibird;
+package com.example.ibook;
 
 import org.junit.Test;
 

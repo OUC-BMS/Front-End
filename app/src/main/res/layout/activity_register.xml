@@ -65,7 +65,37 @@
                 <EditText
                     android:id="@+id/et_username"
                     android:layout_width="match_parent"
-                    android:hint="Username(4~23)"
+                    android:hint="Snumber"
+                    android:layout_marginRight="55dp"
+                    android:layout_height="wrap_content"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#8FFFFFFF"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginBottom="5dp"
+                    android:theme="@style/EditText_white"/>
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center_horizontal">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="5dp">
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_marginLeft="55dp"
+                    android:background="@drawable/icon_name"
+                    android:layout_gravity="center_vertical"/>
+                <EditText
+                    android:id="@+id/et_email"
+                    android:layout_width="match_parent"
+                    android:hint="Sname"
                     android:layout_marginRight="55dp"
                     android:layout_height="wrap_content"
                     android:textColor="#FFFFFF"
@@ -97,36 +127,6 @@
                     android:layout_width="match_parent"
                     android:hint="Password(6~20)"
                     android:inputType="textPassword"
-                    android:layout_marginRight="55dp"
-                    android:layout_height="wrap_content"
-                    android:textColor="#FFFFFF"
-                    android:textColorHint="#8FFFFFFF"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginBottom="5dp"
-                    android:theme="@style/EditText_white"/>
-            </LinearLayout>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_gravity="center_horizontal">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="5dp">
-                <ImageView
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:layout_marginLeft="55dp"
-                    android:background="@drawable/email"
-                    android:layout_gravity="center_vertical"/>
-                <EditText
-                    android:id="@+id/et_email"
-                    android:layout_width="match_parent"
-                    android:hint="Email"
                     android:layout_marginRight="55dp"
                     android:layout_height="wrap_content"
                     android:textColor="#FFFFFF"

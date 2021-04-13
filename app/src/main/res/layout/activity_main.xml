@@ -9,7 +9,7 @@
     android:background="@drawable/bg_main4"
     tools:context=".MainActivity">
     <ImageView
-        android:layout_width="200sp"
+        android:layout_width="250sp"
         android:layout_height="45dp"
         android:background="@drawable/logo_white"
         android:layout_gravity="center_horizontal"
