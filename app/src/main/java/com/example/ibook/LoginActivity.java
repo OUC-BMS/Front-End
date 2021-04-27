@@ -18,7 +18,9 @@ import android.widget.Toast;
 import com.example.ibook.R;
 import com.example.ibook.util.CheckNetUtil;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -129,15 +131,15 @@ public class LoginActivity extends AppCompatActivity {
     private void register(){
         JSONObject json = new JSONObject();
         try {
-            json.put("username", et_username.getText());
-            json.put("password", et_password.getText());
+            json.put("name", et_username.getText());
+            json.put("pwd", et_password.getText());
         } catch (JSONException e) {
             e.printStackTrace();
         }
         RequestBody requestBody = RequestBody.create(JSON, String.valueOf(json));
 
         final Request request = new Request.Builder()
-                .url("https://weparallelines.top/api/account/login")
+                .url("https://139.199.84.147/api/usr/login")
                 //.addHeader("Cookie", cookie)
                 .post(requestBody)
                 .build();
@@ -174,8 +176,11 @@ public class LoginActivity extends AppCompatActivity {
                 try {
                     Gson gson = new Gson();
                     JSONObject jsonObject = new JSONObject(responseData);
-                    code = jsonObject.getInt("code");
+                    code = jsonObject.getInt("status");
                     String msg = jsonObject.getString("msg");
+                    JSONArray data = jsonObject.getJSONArray("data");
+                    String sname = data.get(1).toString();
+                    Log.e("登录：学生名字", sname);
                     byte[] converttoBytes = msg.getBytes("UTF-8");
                     final String s2 = new String(converttoBytes, "UTF-8");
                     if(code == 20000){
@@ -183,6 +188,7 @@ public class LoginActivity extends AppCompatActivity {
                         SharedPreferences.Editor editor = sp.edit();
                         editor.putString("username", String.valueOf(et_username.getText()));
                         editor.putString("password", String.valueOf(et_password.getText()));
+                        editor.putString("sname", String.valueOf(sname));
                         editor.commit();
 
                         //new Thread(runnable2).start();

@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         init();
-        Request();
+        //Request();
 
 
         Resources resources = MainActivity.this.getResources();
@@ -110,11 +110,11 @@ public class MainActivity extends AppCompatActivity {
 
 
         SharedPreferences sp = getSharedPreferences("login", 0);
-        String avatar = sp.getString("avatar", null);
-        String username = sp.getString("username", null);
+        //String avatar = sp.getString("avatar", null);
+        String username = sp.getString("sname", null);
         cookie = sp.getString("cookie", null);
-        if (avatar != null){
-            Glide.with(MainActivity.this).load("https://weparallelines.top" + avatar).into(iv_avatar);
+        if (username != null){
+            //Glide.with(MainActivity.this).load("https://weparallelines.top" + avatar).into(iv_avatar);
             tv_username.setText(username);
             btn_logout.setVisibility(View.VISIBLE);
         }else btn_logout.setVisibility(View.INVISIBLE);
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
             CheckNetUtil checkNetUtil = new CheckNetUtil(getApplicationContext());
             Log.e("检查网络状态结束", "ok");
             if (checkNetUtil.initNet()) {
-                new Thread(runnable).start();
+                //new Thread(runnable).start();
             }
         }
 
@@ -137,28 +137,15 @@ public class MainActivity extends AppCompatActivity {
         btn_logout = findViewById(R.id.btn_logout);
 
         SharedPreferences sp = getSharedPreferences("login", 0);
-        String avatar = sp.getString("avatar", null);
-        String username = sp.getString("username", null);
+        //String avatar = sp.getString("avatar", null);
+        final String username = sp.getString("sname", null);
         cookie = sp.getString("cookie", null);
-        if (avatar != null){
-            Glide.with(MainActivity.this).load("https://weparallelines.top" + avatar).into(iv_avatar);
+        if (username != null){
+            //Glide.with(MainActivity.this).load("https://weparallelines.top" + avatar).into(iv_avatar);
             tv_username.setText(username);
             tv_username.setClickable(false);
             btn_logout.setVisibility(View.VISIBLE);
         }else btn_logout.setVisibility(View.INVISIBLE);
-        btn_camera.setListener(new PromptButtonListener() {
-            @Override
-            public void onClick(PromptButton promptButton) {
-                picTyTakePhoto();
-            }
-        });
-
-        btn_photo.setListener(new PromptButtonListener() {
-            @Override
-            public void onClick(PromptButton promptButton) {
-                pickPhoto();
-            }
-        });
 
         btn_logout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -178,6 +165,7 @@ public class MainActivity extends AppCompatActivity {
                                         editor.putString("password", null);
                                         editor.putString("avatar", null);
                                         editor.putString("cookie", null);
+                                        editor.putString("sname", null);
                                         editor.commit();
 
                                         Toast.makeText(context, "已退出", Toast.LENGTH_SHORT).show();
@@ -209,10 +197,17 @@ public class MainActivity extends AppCompatActivity {
         btn_choosePic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, UserActivity.class);
-                startActivity(intent);
-
-
+                //if (username != null){
+                    Intent intent = new Intent(MainActivity.this, UserActivity.class);
+                    startActivity(intent);
+                //}
+//                else runOnUiThread(new Runnable() {
+//                    @SuppressLint("ShowToast")
+//                    @Override
+//                    public void run() {
+//                        Toast.makeText(MainActivity.this, "您还没有登录", Toast.LENGTH_SHORT);
+//                    }
+//                });
             }
         });
 
@@ -220,234 +215,7 @@ public class MainActivity extends AppCompatActivity {
             CheckNetUtil checkNetUtil = new CheckNetUtil(getApplicationContext());
             Log.e("检查网络状态结束", "ok");
             if (checkNetUtil.initNet()) {
-                new Thread(runnable).start();
-            }
-        }
-    }
-
-    Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-            getAvatar();
-        }
-    };
-
-    private void getAvatar(){
-
-        final Request request = new Request.Builder()
-                .url("https://weparallelines.top/api/account/status")
-                .addHeader("Cookie", cookie)
-                .get()
-                .build();
-
-        OkHttpClient client = new OkHttpClient();
-
-        Response response;
-        try {
-            response = client.newCall(request).execute();
-            String responseData = response.body().string();
-            Log.e("responseData拿头像", responseData);
-            if (response.isSuccessful()) {
-                try {
-                    //Gson gson = new Gson();
-                    JSONObject jsonObject = new JSONObject(responseData);
-                    JSONObject data = jsonObject.getJSONObject("data");
-                    boolean isLogin = data.getBoolean("login");
-                    final String username = data.getString("username");
-                    if(isLogin){
-                        final String avatar = data.getString("avatar");
-                        SharedPreferences sp = getSharedPreferences("login", 0);
-                        SharedPreferences.Editor editor = sp.edit();
-                        editor.putString("avatar", avatar);
-                        editor.putString("username", username);
-                        editor.commit();
-                        runOnUiThread(new Runnable() {
-                            @SuppressLint("ShowToast")
-                            @Override
-                            public void run() {
-                                tv_username.setText(username);
-                                Glide.with(MainActivity.this).load("https://weparallelines.top" + avatar).into(iv_avatar);
-                                btn_logout.setVisibility(View.VISIBLE);
-                                tv_username.setClickable(false);
-                                Toast.makeText(MainActivity.this, "登录成功", Toast.LENGTH_SHORT);
-                            }
-                        });
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }else runOnUiThread(new Runnable() {
-                @SuppressLint("ShowToast")
-                @Override
-                public void run() {
-                    Toast.makeText(MainActivity.this, "登录失败", Toast.LENGTH_SHORT);
-                }
-            });
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    /**
-     * 拍照获取图片
-     */
-    private void picTyTakePhoto() {
-        //判断SD卡是否存在
-        String SDState = Environment.getExternalStorageState();
-        if (SDState.equals(Environment.MEDIA_MOUNTED)) {
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);//"android.media.action.IMAGE_CAPTURE"
-            /***
-             * 使用照相机拍照，拍照后的图片会存放在相册中。使用这种方式好处就是：获取的图片是拍照后的原图，
-             * 如果不使用ContentValues存放照片路径的话，拍照后获取的图片为缩略图有可能不清晰
-             */
-            ContentValues values = new ContentValues();
-            photoUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-            intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, photoUri);
-            startActivityForResult(intent, TAKE_PHOTO_CODE);
-        } else {
-            Toast.makeText(this, "内存卡不存在", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    /***
-     * 从相册中取图片
-     */
-    private void pickPhoto() {
-        Intent intent = new Intent(Intent.ACTION_PICK, null);
-        intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                "image/*");
-        startActivityForResult(intent, SELECT_PIC_CODE);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == Activity.RESULT_OK) {
-            //从相册取图片，有些手机有异常情况，请注意
-            if (requestCode == SELECT_PIC_CODE) {
-                if (null != data && null != data.getData()) {
-                    photoUri = data.getData();
-                    picPath = uriToFilePath(photoUri);
-                    File file = new File(picPath);
-
-                    Uri uri = getImageContentUri(context, file);
-                    Log.e("转换得到的uri", String.valueOf(uri));
-                    Log.e("直接得到的uri", String.valueOf(photoUri));
-
-                    startPhotoZoom(uri, PHOTO_CROP_CODE);
-                } else {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(MainActivity.this, "图片选择失败", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
-            } else if (requestCode == TAKE_PHOTO_CODE) {
-                String[] pojo = {MediaStore.Images.Media.DATA};
-                Cursor cursor = managedQuery(photoUri, pojo, null, null, null);
-                if (cursor != null) {
-                    int columnIndex = cursor.getColumnIndexOrThrow(pojo[0]);
-                    cursor.moveToFirst();
-                    picPath = cursor.getString(columnIndex);
-                    if (Build.VERSION.SDK_INT < 14) {
-                        cursor.close();
-                    }
-                }
-                if (picPath != null) {
-                    photoUri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", new File(picPath));
-                    startPhotoZoom(photoUri, PHOTO_CROP_CODE);
-                } else {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(MainActivity.this, "图片选择失败", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-
-                }
-            } else if (requestCode == PHOTO_CROP_CODE) {
-                if (photoUri != null) {
-
-//                    Intent intent = new Intent(MainActivity.this, TestActivity.class);Log.e("DetailUserActivity", picPath);
-//                    intent.putExtra("path", picPath);
-//                    startActivity(intent);
-                }
-            }
-        }
-    }
-
-    private void startPhotoZoom(Uri uri, int REQUE_CODE_CROP) {
-        Intent intent = new Intent("com.android.camera.action.CROP");
-        intent.setDataAndType(uri, "image/*");
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        // crop=true是设置在开启的Intent中设置显示的VIEW可裁剪
-        intent.putExtra("crop", "true");
-        // 去黑边
-        intent.putExtra("scale", true);
-        intent.putExtra("scaleUpIfNeeded", true);
-        // aspectX aspectY 是宽高的比例，根据自己情况修改
-        intent.putExtra("aspectX", 1);
-        intent.putExtra("aspectY", 1);
-        // outputX outputY 是裁剪图片宽高像素
-        intent.putExtra("outputX", 800);
-        intent.putExtra("outputY", 800);
-        intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
-        //取消人脸识别功能
-        intent.putExtra("noFaceDetection", true);
-        //设置返回的uri
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
-        //设置为不返回数据
-        intent.putExtra("return-data", false);
-        startActivityForResult(intent, REQUE_CODE_CROP);
-    }
-
-    private String uriToFilePath(Uri uri) {
-        //获取图片数据
-        String[] proj = {MediaStore.Images.Media.DATA};
-        //查询
-        Cursor cursor = managedQuery(uri, proj, null, null, null);
-        //获得用户选择的图片的索引值
-        int image_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-        cursor.moveToFirst();
-        //返回图片路径
-        return cursor.getString(image_index);
-    }
-
-    public static Uri getImageContentUri(Context context, File imageFile) {
-        String filePath = imageFile.getAbsolutePath();
-        Cursor cursor = context.getContentResolver().query(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                new String[]{MediaStore.Images.Media._ID},
-                MediaStore.Images.Media.DATA + "=? ",
-                new String[]{filePath}, null);
-
-        if (cursor != null && cursor.moveToFirst()) {
-            int id = cursor.getInt(cursor
-                    .getColumnIndex(MediaStore.MediaColumns._ID));
-            Uri baseUri = Uri.parse("content://media/external/images/media");
-            return Uri.withAppendedPath(baseUri, "" + id);
-        } else {
-            if (imageFile.exists()) {
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.Images.Media.DATA, filePath);
-                return context.getContentResolver().insert(
-                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-            } else {
-                return null;
-            }
-        }
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    void Request() {             //获取相机拍摄读写权限
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {//版本判断
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA}, 1);
+                //new Thread(runnable).start();
             }
         }
     }

@@ -23,7 +23,11 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:targetApi="q">
-        <activity android:name=".UserActivity"></activity>
+        <activity android:name=".UserBookActivity"></activity>
+        <activity android:name=".HistoryActivity" />
+        <activity android:name=".ResultActivity" />
+        <activity android:name=".SearchActivity" />
+        <activity android:name=".UserActivity" />
         <activity
             android:name=".RegisterActivity"
             android:screenOrientation="portrait" />
