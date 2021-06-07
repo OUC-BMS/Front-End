@@ -54,4 +54,5 @@ dependencies {
     implementation 'com.timmy.tdialog:tdialog:2.1.1'
     implementation 'com.github.HanHuoBin:BaseDialog:1.2.0'
     implementation 'com.github.mcxtzhang:SwipeDelMenuLayout:V1.3.0'
+    implementation 'ren.qinc.numberbutton:numberbutton:0.0.1'
 }

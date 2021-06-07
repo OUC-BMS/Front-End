@@ -42,6 +42,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tv_title;
+        TextView tv_returnTime;
+        TextView tv_borrowTime;
         View historyView;
         Button btn_borrow;
 
@@ -51,7 +53,9 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
             historyView = view;
             btn_borrow = view.findViewById(R.id.btn_borrow);
 //            checkBox = view.findViewById(R.id.cb_mission);
-//            tv_title = view.findViewById(R.id.tv_title);
+            tv_title = view.findViewById(R.id.tv_title);
+            tv_borrowTime = view.findViewById(R.id.tv_borrowTime);
+            tv_returnTime = view.findViewById(R.id.tv_returnTime);
 //            tv_time = view.findViewById(R.id.tv_time);
 //            relativeLayout = view.findViewById(R.id.relativeLayout);
 //            iv_checked = view.findViewById(R.id.iv_checked);
@@ -95,6 +99,9 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
     @Override
     public void onBindViewHolder(@NonNull HistoryAdapter.ViewHolder viewHolder, int i) {
         History history = list.get(i);
+        viewHolder.tv_title.setText(history.getBook_name());
+        viewHolder.tv_borrowTime.setText("借阅时间：" + history.getBorrow_time());
+        viewHolder.tv_returnTime.setText("归还时间：" + history.getGiveback_time());
 //        if (mission.isFinished()){
 //            viewHolder.iv_checked.setVisibility(View.VISIBLE);
 //            viewHolder.checkBox.setChecked(true);

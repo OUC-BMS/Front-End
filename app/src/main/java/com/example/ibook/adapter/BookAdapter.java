@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -26,10 +27,15 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.ibook.EditBookActivity;
+import com.example.ibook.LoginActivity;
+import com.example.ibook.MainActivity;
+import com.example.ibook.NewBookActivity;
 import com.example.ibook.R;
 import com.example.ibook.ResultActivity;
 import com.example.ibook.SearchActivity;
 import com.example.ibook.bean.Book;
+import com.example.ibook.util.CheckNetUtil;
 import com.google.gson.Gson;
 import com.hb.dialog.myDialog.MyAlertDialog;
 import com.timmy.tdialog.TDialog;
@@ -61,6 +67,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder>{
     private Context context;
     private String cookie;
     private String user_id;
+    private boolean isManager;
 
 
     public BookAdapter(List<Book> list,Context context){
@@ -68,11 +75,11 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder>{
         this.context = context;
     }
 
-    public BookAdapter(List<Book> list, String cookie, String user_id) {
+    public BookAdapter(List<Book> list, String cookie, String user_id, boolean isManager) {
         this.list = list;
         this.cookie = cookie;
         this.user_id = user_id;
-
+        this.isManager = isManager;
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -120,24 +127,39 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder>{
             public void onClick(View v) {
                 final int position = holder.getAdapterPosition();
                 final Book book = list.get(position);
-                if(book.getAvailable() > 0){
-                    sendRequestWithOkHttp(position,book,view,holder);
+                if(!isManager){
+                    if(book.getAvailable() > 0){
+                        CheckNetUtil checkNetUtil = new CheckNetUtil(context);
+                        Log.e("检查网络状态结束", "ok");
+                        if (checkNetUtil.initNet()) {
+                            sendRequestWithOkHttp(position,book,view,holder);
+                        }
+                    }
+                    else {
+                        MyAlertDialog myAlertDialog = new MyAlertDialog(context).builder()
+                                .setTitle("当前书籍已全部借出")
+                                .setMsg("预约当前书籍？")
+                                .setPositiveButton("确认", new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        CheckNetUtil checkNetUtil = new CheckNetUtil(context);
+                                        Log.e("检查网络状态结束", "ok");
+                                        if (checkNetUtil.initNet()) {
+                                            evaluateDialog(position,book,view,holder);
+                                        }
+                                    }
+                                }).setNegativeButton("取消", new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                    }
+                                });
+                        myAlertDialog.show();
+                    }
                 }
                 else {
-                    MyAlertDialog myAlertDialog = new MyAlertDialog(context).builder()
-                            .setTitle("当前书籍已全部借出")
-                            .setMsg("预约当前书籍？")
-                            .setPositiveButton("确认", new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    evaluateDialog(position,book,view,holder);
-                                }
-                            }).setNegativeButton("取消", new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                }
-                            });
-                    myAlertDialog.show();
+                    Intent intent = new Intent(context, EditBookActivity.class);
+                    intent.putExtra("book", book);
+                    context.startActivity(intent);
                 }
             }
         });
@@ -165,6 +187,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder>{
         viewHolder.tv_title.setText(book.getBook_name());
         viewHolder.tv_available.setText("数量：" + book.getAvailable());
         viewHolder.tv_author.setText(book.getAuthor());
+        if(isManager) viewHolder.btn_borrow.setText("编辑");
 //        if (mission.isFinished()){
 //            viewHolder.iv_checked.setVisibility(View.VISIBLE);
 //            viewHolder.checkBox.setChecked(true);
@@ -234,7 +257,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder>{
                 RequestBody requestBody = RequestBody.create(JSON, String.valueOf(json));
 
                 final Request request = new Request.Builder()
-                        .url("https://139.199.84.147/api/checkout")
+                        .url("http://139.199.84.147/api/book/checkout")
                         .addHeader("Cookie", cookie)
                         .post(requestBody)
                         .build();
@@ -251,12 +274,15 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder>{
                             Gson gson = new Gson();
                             JSONObject jsonObject = new JSONObject(responseData);
                             int code = jsonObject.getInt("code");
+                            Looper.prepare();
                             if(code == 46000)
+
                                 Toast.makeText(view.getContext(), "您已超过借阅上限", Toast.LENGTH_SHORT).show();
                             else if(code == 20000)
                                 Toast.makeText(view.getContext(), "借阅成功", Toast.LENGTH_SHORT).show();
                             else
                                 Toast.makeText(view.getContext(), "借阅失败", Toast.LENGTH_SHORT).show();
+                            Looper.loop();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -289,7 +315,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder>{
                 RequestBody requestBody = RequestBody.create(JSON, String.valueOf(json));
 
                 final Request request = new Request.Builder()
-                        .url("https://139.199.84.147/api/appointment")
+                        .url("http://139.199.84.147/api/book/appointment")
                         .addHeader("Cookie", cookie)
                         .post(requestBody)
                         .build();
@@ -306,10 +332,14 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder>{
                             Gson gson = new Gson();
                             JSONObject jsonObject = new JSONObject(responseData);
                             int code = jsonObject.getInt("code");
+                            Looper.prepare();
+
                             if(code == 20000)
                                 Toast.makeText(view.getContext(), "预约成功", Toast.LENGTH_SHORT).show();
                             else
                                 Toast.makeText(view.getContext(), "预约失败", Toast.LENGTH_SHORT).show();
+
+                            Looper.loop();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }

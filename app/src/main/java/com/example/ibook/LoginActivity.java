@@ -139,7 +139,7 @@ public class LoginActivity extends AppCompatActivity {
         RequestBody requestBody = RequestBody.create(JSON, String.valueOf(json));
 
         final Request request = new Request.Builder()
-                .url("https://139.199.84.147/api/usr/login")
+                .url("http://139.199.84.147/api/usr/login")
                 //.addHeader("Cookie", cookie)
                 .post(requestBody)
                 .build();
@@ -176,24 +176,26 @@ public class LoginActivity extends AppCompatActivity {
                 try {
                     Gson gson = new Gson();
                     JSONObject jsonObject = new JSONObject(responseData);
-                    code = jsonObject.getInt("status");
+                    code = jsonObject.getInt("code");
                     String msg = jsonObject.getString("msg");
-                    JSONArray data = jsonObject.getJSONArray("data");
-                    String sname = data.get(1).toString();
+                    JSONObject data = jsonObject.getJSONObject("data");
+                    String sname = data.getString("username");
+                    boolean isManager = data.getBoolean("is_manager");
                     Log.e("登录：学生名字", sname);
                     byte[] converttoBytes = msg.getBytes("UTF-8");
                     final String s2 = new String(converttoBytes, "UTF-8");
                     if(code == 20000){
                         SharedPreferences sp = getSharedPreferences("login", 0);
                         SharedPreferences.Editor editor = sp.edit();
-                        editor.putString("username", String.valueOf(et_username.getText()));
+                        editor.putString("username", String.valueOf(et_username.getText()));//学号
                         editor.putString("password", String.valueOf(et_password.getText()));
-                        editor.putString("sname", String.valueOf(sname));
+                        editor.putString("sname", String.valueOf(sname));//学生姓名
+                        editor.putBoolean("isManager", isManager);
                         editor.commit();
 
-                        //new Thread(runnable2).start();
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent);
                         finish();
-
                     }else
                         runOnUiThread(new Runnable() {
                             @Override

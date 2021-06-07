@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
     private String picPath;
     private Context context;
     private String cookie;
+    private boolean isManager;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -94,14 +95,14 @@ public class MainActivity extends AppCompatActivity {
 
 
         Resources resources = MainActivity.this.getResources();
-        @SuppressLint("UseCompatLoadingForDrawables") Drawable drawable = resources.getDrawable(R.drawable.ibird_logo3);
-//        OpeningStartAnimation openingStartAnimation = new OpeningStartAnimation.Builder(this)
-//                .setDrawStategy(new RedYellowBlueDrawStrategy())
-//                .setAppIcon(drawable)
-//                .setAppStatement("没有人比我们更懂图书管理")
-//                .setAnimationFinishTime(400)
-//                .create();
-//        openingStartAnimation.show(this);
+        @SuppressLint("UseCompatLoadingForDrawables") Drawable drawable = resources.getDrawable(R.drawable.icon_book);
+        OpeningStartAnimation openingStartAnimation = new OpeningStartAnimation.Builder(this)
+                .setDrawStategy(new RedYellowBlueDrawStrategy())
+                .setAppIcon(drawable)
+                .setAppStatement("没有人比我们更懂图书管理")
+                .setAnimationFinishTime(400)
+                .create();
+        openingStartAnimation.show(this);
     }
 
     @Override
@@ -112,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences sp = getSharedPreferences("login", 0);
         //String avatar = sp.getString("avatar", null);
         String username = sp.getString("sname", null);
+        isManager = sp.getBoolean("isManager", false);
         cookie = sp.getString("cookie", null);
         if (username != null){
             //Glide.with(MainActivity.this).load("https://weparallelines.top" + avatar).into(iv_avatar);
@@ -140,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
         //String avatar = sp.getString("avatar", null);
         final String username = sp.getString("sname", null);
         cookie = sp.getString("cookie", null);
+        isManager = sp.getBoolean("isManager", false);
         if (username != null){
             //Glide.with(MainActivity.this).load("https://weparallelines.top" + avatar).into(iv_avatar);
             tv_username.setText(username);
@@ -165,6 +168,7 @@ public class MainActivity extends AppCompatActivity {
                                         editor.putString("password", null);
                                         editor.putString("avatar", null);
                                         editor.putString("cookie", null);
+                                        editor.putBoolean("isManager", false);
                                         editor.putString("sname", null);
                                         editor.commit();
 
@@ -172,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
 
                                         tv_username.setText("登录");
                                         btn_logout.setVisibility(View.INVISIBLE);
-                                        Glide.with(MainActivity.this).load(R.drawable.avater2).into(iv_avatar);
+                                        Glide.with(MainActivity.this).load(R.drawable.avater3).into(iv_avatar);
                                         tv_username.setClickable(true);
                                     }
                                 }).setNegativeButton("取消", new View.OnClickListener() {
@@ -197,17 +201,23 @@ public class MainActivity extends AppCompatActivity {
         btn_choosePic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //if (username != null){
-                    Intent intent = new Intent(MainActivity.this, UserActivity.class);
-                    startActivity(intent);
-                //}
-//                else runOnUiThread(new Runnable() {
-//                    @SuppressLint("ShowToast")
-//                    @Override
-//                    public void run() {
-//                        Toast.makeText(MainActivity.this, "您还没有登录", Toast.LENGTH_SHORT);
-//                    }
-//                });
+                if (username != null){
+                    if(!isManager){
+                        Intent intent = new Intent(MainActivity.this, UserActivity.class);
+                        startActivity(intent);
+                    }
+                    else {
+                        Intent intent = new Intent(MainActivity.this, ManagerActivity.class);
+                        startActivity(intent);
+                    }
+                }
+                else runOnUiThread(new Runnable() {
+                    @SuppressLint("ShowToast")
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this, "您还没有登录", Toast.LENGTH_SHORT);
+                    }
+                });
             }
         });
 

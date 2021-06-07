@@ -36,6 +36,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import static com.example.ibook.RegisterActivity.decodeUnicode;
 import static com.example.ibook.ResultActivity.JSON;
 
 
@@ -67,6 +68,7 @@ public class SearchActivity extends AppCompatActivity {
 
         SharedPreferences sp = getSharedPreferences("login", 0);
         cookie = sp.getString("cookie", null);
+        Log.e("search拿cookie", cookie);
     }
 
     private void initListener(){
@@ -79,10 +81,8 @@ public class SearchActivity extends AppCompatActivity {
                 CheckNetUtil checkNetUtil = new CheckNetUtil(getApplicationContext());
                 Log.e("检查网络状态结束", "ok");
                 if (checkNetUtil.initNet()) {
-                    Intent intent = new Intent(SearchActivity.this, ResultActivity.class);
-                    //intent.putExtra("result", responseData);
-                    startActivity(intent);
                     new Thread(runnable).start();
+
                 }
 
                 return false;
@@ -98,7 +98,7 @@ public class SearchActivity extends AppCompatActivity {
     Runnable runnable = new Runnable(){
         @Override
         public void run() {
-            //search(searchstring);
+            search(searchstring);
 
 //            Message msg = new Message();
 //            Bundle data = new Bundle();
@@ -118,9 +118,9 @@ public class SearchActivity extends AppCompatActivity {
         RequestBody requestBody = RequestBody.create(JSON, String.valueOf(json));
 
         final Request request = new Request.Builder()
-                .url("https://139.199.84.147/api/book")
-                .addHeader("Cookie", cookie)
-                .post(requestBody)
+                .url("http://139.199.84.147/api/book" + "?search=" + search)
+                .addHeader("cookie", cookie)
+                .get()
                 .build();
 
         OkHttpClient client = new OkHttpClient();
@@ -134,13 +134,29 @@ public class SearchActivity extends AppCompatActivity {
                 try {
                     Gson gson = new Gson();
                     JSONObject jsonObject = new JSONObject(responseData);
-                    data = jsonObject.getJSONObject("data");
-                    Intent intent = new Intent(SearchActivity.this, ResultActivity.class);
-                    intent.putExtra("result", responseData);
-
+                    int code = jsonObject.getInt("code");
+                    String msg = jsonObject.getString("msg");
+                    //byte[] converttoBytes = msg.getBytes("UTF-8");
+                    final String s2 = decodeUnicode(msg);
+                    Log.e("msg:", s2);
+                    if(code == 20000){
+                        data = jsonObject.getJSONObject("data");
+                        Intent intent = new Intent(SearchActivity.this, ResultActivity.class);
+                        intent.putExtra("result", responseData);
+                        intent.putExtra("search", search);
+//                    Intent intent = new Intent(SearchActivity.this, ResultActivity.class);
+//                    intent.putExtra("result", responseData);
+//                    startActivity(intent);
 //                intent.putExtra("mList", (Serializable)list);
 //                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
+                        startActivity(intent);
+                    }else runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(SearchActivity.this, s2, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

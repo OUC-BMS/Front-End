@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,14 +23,27 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.ibook.R;
 import com.example.ibook.bean.Book;
 import com.example.ibook.bean.History;
+import com.google.gson.Gson;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+import static com.example.ibook.ResultActivity.JSON;
 
 public class UserBookAdapter extends RecyclerView.Adapter<UserBookAdapter.ViewHolder>{
 
     private List<History> list;
     private Context context;
+    private String cookie;
 
 
     public UserBookAdapter(List<History> list,Context context){
@@ -36,8 +51,9 @@ public class UserBookAdapter extends RecyclerView.Adapter<UserBookAdapter.ViewHo
         this.context = context;
     }
 
-    public UserBookAdapter(List<History> list) {
+    public UserBookAdapter(List<History> list, String cookie) {
         this.list = list;
+        this.cookie = cookie;
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -85,7 +101,15 @@ public class UserBookAdapter extends RecyclerView.Adapter<UserBookAdapter.ViewHo
         holder.btn_return.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(view.getContext(), "还书成功", Toast.LENGTH_SHORT).show();
+                int position = holder.getAdapterPosition();
+                History history = list.get(position);
+                returnBook(history, view);
+                if(history.getStatus() == 0){
+                    Toast.makeText(view.getContext(), "已取消预约", Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    Toast.makeText(view.getContext(), "已归还", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -111,7 +135,7 @@ public class UserBookAdapter extends RecyclerView.Adapter<UserBookAdapter.ViewHo
         History history = list.get(i);
         viewHolder.tv_title.setText(history.getBook_name());
         viewHolder.tv_borrowTime.setText("借阅时间：" + history.getBorrow_time());
-        viewHolder.tv_returnTime.setText("归还时间：" + history.getGiveback_time());
+        viewHolder.tv_returnTime.setText("");
         switch (history.getStatus()){
             case 0:
                 viewHolder.tv_status.setText("状态：预约");
@@ -176,5 +200,60 @@ public class UserBookAdapter extends RecyclerView.Adapter<UserBookAdapter.ViewHo
         //删除动画
         notifyItemRemoved(position);
         notifyItemRangeChanged(position,1);
+    }
+
+    private void returnBook(final History history, final View view){
+        //开启现线程发起网络请求
+        new Thread(new Runnable(){
+            @Override
+            public void run(){
+                JSONObject json = new JSONObject();
+                try {
+                    json.put("book_id", history.getBook_id());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                RequestBody requestBody = RequestBody.create(JSON, String.valueOf(json));
+
+                final Request request = new Request.Builder()
+                        .url("http://139.199.84.147/api/book/return")
+                        .addHeader("Cookie", cookie)
+                        .post(requestBody)
+                        .build();
+
+                OkHttpClient client = new OkHttpClient();
+
+                Response response;
+                try {
+                    response = client.newCall(request).execute();
+                    String responseData = response.body().string();
+                    Log.e("responseData", responseData);
+                    if (response.isSuccessful()) {
+                        try {
+                            Gson gson = new Gson();
+                            JSONObject jsonObject = new JSONObject(responseData);
+                            int code = jsonObject.getInt("code");
+                            Looper.prepare();
+
+                            if(code == 20000){
+                                if(history.getStatus() == 0){
+                                    Toast.makeText(view.getContext(), "已取消预约", Toast.LENGTH_SHORT).show();
+                                }
+                                else{
+                                    Toast.makeText(view.getContext(), "已归还", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                            else
+                                Toast.makeText(view.getContext(), "归还失败", Toast.LENGTH_SHORT).show();
+                            Looper.loop();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 }

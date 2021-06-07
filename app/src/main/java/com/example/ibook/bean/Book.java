@@ -1,6 +1,8 @@
 package com.example.ibook.bean;
 
-public class Book {
+import java.io.Serializable;
+
+public class Book implements Serializable {
     private String book_name;
     private String author;
     private int available;

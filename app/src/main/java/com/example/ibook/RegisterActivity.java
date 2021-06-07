@@ -35,7 +35,7 @@ public class RegisterActivity extends AppCompatActivity {
     private Button btn_signup;
     private EditText et_username;
     private EditText et_password;
-    private EditText et_email;
+    private EditText et_usernum;
     private int code;
 
     @Override
@@ -52,7 +52,7 @@ public class RegisterActivity extends AppCompatActivity {
         init();
     }
     private void init(){
-        et_email = findViewById(R.id.et_email);
+        et_usernum = findViewById(R.id.et_usernum);
         et_password = findViewById(R.id.et_password);
         et_username = findViewById(R.id.et_username);
 
@@ -97,16 +97,16 @@ public class RegisterActivity extends AppCompatActivity {
     private void signup(){
         JSONObject json = new JSONObject();
         try {
-            json.put("username", et_username.getText());
-            json.put("password", et_password.getText());
-            json.put("email", et_email.getText());
+            json.put("name", et_username.getText());
+            json.put("pwd", et_password.getText());
+            json.put("userid", et_usernum.getText());
         } catch (JSONException e) {
             e.printStackTrace();
         }
         RequestBody requestBody = RequestBody.create(JSON, String.valueOf(json));
 
         final Request request = new Request.Builder()
-                .url("https://weparallelines.top/api/account/register")
+                .url("http://139.199.84.147/api/usr/register")
                 //.addHeader("Cookie", cookie)
                 .post(requestBody)
                 .build();
@@ -124,8 +124,9 @@ public class RegisterActivity extends AppCompatActivity {
                     JSONObject jsonObject = new JSONObject(responseData);
                     code = jsonObject.getInt("code");
                     String msg = jsonObject.getString("msg");
-                    byte[] converttoBytes = msg.getBytes("UTF-8");
-                    final String s2 = new String(converttoBytes, "UTF-8");
+                    //byte[] converttoBytes = msg.getBytes("UTF-8");
+                    final String s2 = decodeUnicode(msg);
+                    Log.e("msg:", s2);
                     if(code == 20000){
 
                         runOnUiThread(new Runnable() {
@@ -156,5 +157,64 @@ public class RegisterActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    //Unicode转中文
+    public static String decodeUnicode(final String unicode) {
+        StringBuffer string = new StringBuffer();
+
+        String[] hex = unicode.split("\\\\u");
+
+        for (int i = 0; i < hex.length; i++) {
+
+            try {
+                // 汉字范围 \u4e00-\u9fa5 (中文)
+                if(hex[i].length()>=4){//取前四个，判断是否是汉字
+                    String chinese = hex[i].substring(0, 4);
+                    try {
+                        int chr = Integer.parseInt(chinese, 16);
+                        boolean isChinese = isChinese((char) chr);
+                        //转化成功，判断是否在  汉字范围内
+                        if (isChinese){//在汉字范围内
+                            // 追加成string
+                            string.append((char) chr);
+                            //并且追加  后面的字符
+                            String behindString = hex[i].substring(4);
+                            string.append(behindString);
+                        }else {
+                            string.append(hex[i]);
+                        }
+                    } catch (NumberFormatException e1) {
+                        string.append(hex[i]);
+                    }
+
+                }else{
+                    string.append(hex[i]);
+                }
+            } catch (NumberFormatException e) {
+                string.append(hex[i]);
+            }
+        }
+
+        return string.toString();
+    }
+
+    /**
+     * 判断是否为中文字符
+     *
+     * @param c
+     * @return
+     */
+    public static boolean isChinese(char c) {
+        Character.UnicodeBlock ub = Character.UnicodeBlock.of(c);
+        if (ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS
+                || ub == Character.UnicodeBlock.CJK_COMPATIBILITY_IDEOGRAPHS
+                || ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A
+                || ub == Character.UnicodeBlock.GENERAL_PUNCTUATION
+                || ub == Character.UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION
+                || ub == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS) {
+            return true;
+        }
+        return false;
     }
 }

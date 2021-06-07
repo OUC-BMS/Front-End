@@ -7,28 +7,25 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class UserActivity extends AppCompatActivity {
+public class ManagerActivity extends AppCompatActivity {
 
     CardView cv_search;
-    CardView cv_history;
-    CardView cv_userbook;
+    CardView cv_addbook;
     TextView tv_username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_user);
+        setContentView(R.layout.activity_manager);
 
         initView();
         initListener();
     }
     private void initView(){
         cv_search = findViewById(R.id.cv_search);
-        cv_history = findViewById(R.id.cv_history);
-        cv_userbook = findViewById(R.id.cv_userbook);
+        cv_addbook = findViewById(R.id.cv_addbook);
         tv_username = findViewById(R.id.tv_username);
 
         SharedPreferences sp = getSharedPreferences("login", 0);
@@ -42,25 +39,16 @@ public class UserActivity extends AppCompatActivity {
         cv_search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(UserActivity.this, SearchActivity.class);
+                Intent intent = new Intent(ManagerActivity.this, SearchActivity.class);
 //                intent.putExtra("mList", (Serializable)list);
 //                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }
         });
-        cv_userbook.setOnClickListener(new View.OnClickListener() {
+        cv_addbook.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(UserActivity.this, UserBookActivity.class);
-//                intent.putExtra("mList", (Serializable)list);
-//                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-            }
-        });
-        cv_history.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(UserActivity.this, HistoryActivity.class);
+                Intent intent = new Intent(ManagerActivity.this, NewBookActivity.class);
 //                intent.putExtra("mList", (Serializable)list);
 //                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);

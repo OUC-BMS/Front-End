@@ -15,7 +15,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ibird_logo3"
+        android:icon="@drawable/icon_book"
         android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -23,7 +23,10 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:targetApi="q">
-        <activity android:name=".UserBookActivity"></activity>
+        <activity android:name=".EditBookActivity"></activity>
+        <activity android:name=".ManagerActivity" />
+        <activity android:name=".NewBookActivity" />
+        <activity android:name=".UserBookActivity" />
         <activity android:name=".HistoryActivity" />
         <activity android:name=".ResultActivity" />
         <activity android:name=".SearchActivity" />
